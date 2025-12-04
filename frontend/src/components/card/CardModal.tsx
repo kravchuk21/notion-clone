@@ -1,30 +1,29 @@
-import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, Tag, Archive } from 'lucide-react';
-import type { Card, Priority, UpdateCardInput } from '@/types';
-import { Modal } from '@/components/ui/Modal';
+import { useMemo, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, PanelRight, Archive, Trash2 } from 'lucide-react';
+import type { UpdateCardInput, BoardWithDetails } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { CardViewMode } from './CardViewMode';
+import { CardEditMode } from './CardEditMode';
+import { CardViewToggle } from './CardViewToggle';
+import { useCardViewStore } from '@/store/cardViewStore';
+import { useCardHotkeys } from '@/hooks/useCardHotkeys';
+import { modalBackdropVariants, modalContentVariants } from '@/lib/motion';
 import { cn } from '@/utils/cn';
-import { PRIORITY_OPTIONS, getTagColor } from '@/utils/constants';
-import { formatDateForInput } from '@/utils/date';
 
-export interface CardModalProps {
-  card: Card | null;
-  isOpen: boolean;
-  onClose: () => void;
+interface CardModalProps {
+  board: BoardWithDetails;
   onUpdate: (id: string, data: UpdateCardInput) => void;
   onDelete: (id: string) => void;
-  onArchive?: (id: string) => void;
+  onArchive: (id: string) => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
   isArchiving?: boolean;
 }
 
 export function CardModal({
-  card,
-  isOpen,
-  onClose,
+  board,
   onUpdate,
   onDelete,
   onArchive,
@@ -32,211 +31,209 @@ export function CardModal({
   isDeleting,
   isArchiving,
 }: CardModalProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<Priority>('MEDIUM');
-  const [deadline, setDeadline] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState('');
+  const {
+    selectedCardId,
+    isEditing,
+    setEditMode,
+    closeCard,
+    setViewMode,
+  } = useCardViewStore();
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
+  // Find selected card and its column
+  const { card, columnTitle } = useMemo(() => {
+    if (!selectedCardId) return { card: null, columnTitle: undefined };
+    
+    for (const column of board.columns) {
+      const foundCard = column.cards.find((c) => c.id === selectedCardId);
+      if (foundCard) {
+        return { card: foundCard, columnTitle: column.title };
+      }
+    }
+    return { card: null, columnTitle: undefined };
+  }, [board.columns, selectedCardId]);
+
+  // Get all card IDs for navigation
+  const allCardIds = useMemo(() => {
+    return board.columns.flatMap((col) => col.cards.map((c) => c.id));
+  }, [board.columns]);
+
+  // Navigate to adjacent card
+  const navigateCard = useCallback(
+    (direction: 'up' | 'down') => {
+      if (!selectedCardId) return;
+      const currentIndex = allCardIds.indexOf(selectedCardId);
+      if (currentIndex === -1) return;
+
+      const newIndex =
+        direction === 'up'
+          ? Math.max(0, currentIndex - 1)
+          : Math.min(allCardIds.length - 1, currentIndex + 1);
+
+      if (newIndex !== currentIndex) {
+        useCardViewStore.getState().openCard(allCardIds[newIndex]);
+      }
+    },
+    [selectedCardId, allCardIds]
+  );
+
+  // Handle save
+  const handleSave = useCallback(() => {
+    setEditMode(false);
+  }, [setEditMode]);
+
+  // Hotkeys
+  useCardHotkeys({
+    onSave: handleSave,
+    onNavigateCard: navigateCard,
+    enabled: !!selectedCardId,
+  });
+
+  // Handle update from edit mode
+  const handleUpdate = useCallback(
+    (data: UpdateCardInput) => {
+      if (card) {
+        onUpdate(card.id, data);
+        setEditMode(false);
+      }
+    },
+    [card, onUpdate, setEditMode]
+  );
+
+  // Handle delete
+  const handleDelete = useCallback(() => {
     if (card) {
-      setTitle(card.title);
-      setDescription(card.description || '');
-      setPriority(card.priority);
-      setDeadline(formatDateForInput(card.deadline));
-      setTags(card.tags);
+      onDelete(card.id);
+      setShowDeleteConfirm(false);
+      closeCard();
     }
-  }, [card]);
+  }, [card, onDelete, closeCard]);
 
-  if (!card) return null;
-
-  const handleSave = () => {
-    onUpdate(card.id, {
-      title,
-      description: description || null,
-      priority,
-      deadline: deadline ? new Date(deadline).toISOString() : null,
-      tags,
-    });
-    onClose();
-  };
-
-  const handleAddTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
+  // Handle archive
+  const handleArchive = useCallback(() => {
+    if (card) {
+      onArchive(card.id);
+      closeCard();
     }
-  };
+  }, [card, onArchive, closeCard]);
 
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
-  };
-
-  const handleDelete = () => {
-    onDelete(card.id);
-    setShowDeleteConfirm(false);
-    onClose();
-  };
+  const isOpen = !!selectedCardId && !!card;
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title="Редактировать карточку" size="lg">
-        <div className="space-y-4">
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              Название
-            </label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Название задачи"
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              variants={modalBackdropVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="fixed inset-0 z-50 bg-black/50"
+              onClick={closeCard}
             />
-          </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              Описание
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Добавьте описание..."
-              rows={4}
-              className="w-full rounded-md border border-border bg-bg-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors resize-none"
-            />
-          </div>
-
-          {/* Priority */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              Приоритет
-            </label>
-            <div className="flex gap-2">
-              {PRIORITY_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setPriority(option.value as Priority)}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition-colors',
-                    priority === option.value
-                      ? 'border-accent bg-accent/10'
-                      : 'border-border hover:border-border-hover'
-                  )}
-                >
-                  <span className={cn('w-2 h-2 rounded-full', option.color)} />
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Deadline */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              <span className="flex items-center gap-1.5">
-                <Calendar size={14} />
-                Дедлайн
-              </span>
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-auto"
-              />
-              {deadline && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDeadline('')}
-                >
-                  <X size={16} />
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              <span className="flex items-center gap-1.5">
-                <Tag size={14} />
-                Метки
-              </span>
-            </label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {tags.map((tag, index) => (
-                <span
-                  key={tag}
-                  className={cn(
-                    'inline-flex items-center gap-1 px-2 py-1 rounded text-sm text-white',
-                    getTagColor(index)
-                  )}
-                >
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:opacity-75"
-                  >
-                    <X size={14} />
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Новая метка"
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-              />
-              <Button variant="secondary" onClick={handleAddTag}>
-                Добавить
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-between mt-6 pt-4 border-t border-border">
-          <div className="flex gap-2">
-            {onArchive && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  onArchive(card.id);
-                  onClose();
-                }}
-                isLoading={isArchiving}
+            {/* Modal - fullscreen on mobile, centered on desktop */}
+            <div className="fixed inset-0 z-50 flex items-end xs:items-center justify-center xs:p-4 pointer-events-none">
+              <motion.div
+                variants={modalContentVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className={cn(
+                  'w-full bg-bg-primary shadow-notion-xl pointer-events-auto flex flex-col',
+                  // Mobile: fullscreen from bottom
+                  'h-[95vh] rounded-t-2xl',
+                  // Desktop: centered modal
+                  'xs:h-auto xs:max-h-[90vh] xs:max-w-2xl xs:rounded-lg'
+                )}
+                onClick={(e) => e.stopPropagation()}
               >
-                <Archive size={16} />
-                В архив
-              </Button>
-            )}
-            <Button
-              variant="danger"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              <Trash2 size={16} />
-              Удалить
-            </Button>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={onClose}>
-              Отмена
-            </Button>
-            <Button onClick={handleSave} isLoading={isUpdating}>
-              Сохранить
-            </Button>
-          </div>
-        </div>
-      </Modal>
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 xs:px-6 py-3 xs:py-4 border-b border-border shrink-0">
+                  {/* Title on mobile */}
+                  <h2 className="text-base font-semibold text-text-primary truncate xs:hidden">
+                    {card.title}
+                  </h2>
+                  
+                  <div className="flex items-center gap-1 ml-auto">
+                    {/* Switch to panel - hide on mobile */}
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('peek')}
+                      className="hidden md:flex p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                      title="Открыть как панель (M)"
+                    >
+                      <PanelRight size={16} />
+                    </button>
 
+                    {/* Close */}
+                    <button
+                      type="button"
+                      onClick={closeCard}
+                      className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                      title="Закрыть (Esc)"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* View/Edit Toggle */}
+                <div className="px-4 xs:px-6 py-3 border-b border-border shrink-0">
+                  <CardViewToggle
+                    isEditing={isEditing}
+                    onToggle={() => setEditMode(!isEditing)}
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto px-4 xs:px-6 py-4">
+                  {isEditing ? (
+                    <CardEditMode
+                      card={card}
+                      onSave={handleUpdate}
+                      onCancel={() => setEditMode(false)}
+                      isLoading={isUpdating}
+                    />
+                  ) : (
+                    <CardViewMode card={card} columnTitle={columnTitle} />
+                  )}
+                </div>
+
+                {/* Footer actions (only in view mode) */}
+                {!isEditing && (
+                  <div className="px-4 xs:px-6 py-3 xs:py-4 border-t border-border flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleArchive}
+                      isLoading={isArchiving}
+                      className="flex-1 xs:flex-none"
+                    >
+                      <Archive size={14} />
+                      <span className="hidden xs:inline">В архив</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="text-priority-high hover:bg-priority-high/10 flex-1 xs:flex-none"
+                    >
+                      <Trash2 size={14} />
+                      <span className="hidden xs:inline">Удалить</span>
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete confirmation */}
       <ConfirmDialog
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
@@ -249,4 +246,3 @@ export function CardModal({
     </>
   );
 }
-

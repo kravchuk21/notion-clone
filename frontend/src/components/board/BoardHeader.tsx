@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, Check, X, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -14,6 +14,7 @@ export interface BoardHeaderProps {
   onOpenArchive?: () => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
+  children?: ReactNode;
 }
 
 export function BoardHeader({
@@ -24,6 +25,7 @@ export function BoardHeader({
   onOpenArchive,
   isUpdating,
   isDeleting,
+  children,
 }: BoardHeaderProps) {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -102,6 +104,7 @@ export function BoardHeader({
         </div>
 
         <div className="flex items-center gap-2">
+          {children}
           {onOpenArchive && (
             <Button
               variant="ghost"

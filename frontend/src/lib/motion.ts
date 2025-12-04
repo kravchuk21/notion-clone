@@ -292,3 +292,25 @@ export const authFeatureVariants: Variants = {
     transition: { duration: 0.3, ease: 'easeOut' },
   },
 };
+
+// ============================================
+// Side Panel Animations
+// ============================================
+
+export const sidePanelVariants: Variants = {
+  initial: { x: '100%' },
+  animate: { 
+    x: 0,
+    transition: { type: 'spring', damping: 25, stiffness: 300 },
+  },
+  exit: { 
+    x: '100%',
+    transition: { duration: 0.2, ease: 'easeIn' },
+  },
+};
+
+export const sidePanelBackdropVariants: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};

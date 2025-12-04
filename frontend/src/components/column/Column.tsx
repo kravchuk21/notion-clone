@@ -1,12 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { ColumnWithCards, Card as CardType, UpdateCardInput } from '@/types';
+import type { ColumnWithCards, UpdateCardInput } from '@/types';
 import { ColumnHeader } from './ColumnHeader';
 import { Card } from '@/components/card/Card';
-import { CardModal } from '@/components/card/CardModal';
 import { AddCard } from '@/components/card/AddCard';
 import { useFilterStore } from '@/store/filterStore';
+import { useCardViewStore } from '@/store/cardViewStore';
 import { isOverdue } from '@/utils/date';
 import { cn } from '@/utils/cn';
 
@@ -29,16 +29,9 @@ export function Column({
   onUpdateColumn,
   onDeleteColumn,
   onCreateCard,
-  onUpdateCard,
-  onDeleteCard,
-  onArchiveCard,
   isCreatingCard,
-  isUpdatingCard,
-  isDeletingCard,
-  isArchivingCard,
 }: ColumnProps) {
-  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
-
+  const { openCard } = useCardViewStore();
   const { searchQuery, priorities, tags, showOverdue, hasDeadline } = useFilterStore();
 
   const {
@@ -98,60 +91,45 @@ export function Column({
   const cardIds = useMemo(() => filteredCards.map((c) => c.id), [filteredCards]);
 
   return (
-    <>
-      <div
-        ref={setNodeRef}
-        style={style}
-        className={cn(
-          'flex-shrink-0 w-72 bg-bg-secondary rounded-lg flex flex-col max-h-[calc(100vh-10rem)]',
-          isDragging && 'opacity-50'
-        )}
-      >
-        {/* Header - draggable */}
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-          <ColumnHeader
-            title={column.title}
-            cardCount={filteredCards.length}
-            totalCount={column.cards.length}
-            onUpdate={(title) => onUpdateColumn(column.id, title)}
-            onDelete={() => onDeleteColumn(column.id)}
-          />
-        </div>
-
-        {/* Cards */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-2">
-          <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
-            {filteredCards.map((card) => (
-              <Card
-                key={card.id}
-                card={card}
-                onClick={() => setSelectedCard(card)}
-              />
-            ))}
-          </SortableContext>
-        </div>
-
-        {/* Add card */}
-        <div className="p-2 border-t border-border/50">
-          <AddCard
-            onAdd={(title) => onCreateCard(column.id, title)}
-            isLoading={isCreatingCard}
-          />
-        </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'flex-shrink-0 w-72 bg-bg-secondary rounded-lg flex flex-col max-h-[calc(100vh-10rem)]',
+        isDragging && 'opacity-50'
+      )}
+    >
+      {/* Header - draggable */}
+      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+        <ColumnHeader
+          title={column.title}
+          cardCount={filteredCards.length}
+          totalCount={column.cards.length}
+          onUpdate={(title) => onUpdateColumn(column.id, title)}
+          onDelete={() => onDeleteColumn(column.id)}
+        />
       </div>
 
-      {/* Card modal */}
-      <CardModal
-        card={selectedCard}
-        isOpen={!!selectedCard}
-        onClose={() => setSelectedCard(null)}
-        onUpdate={onUpdateCard}
-        onDelete={onDeleteCard}
-        onArchive={onArchiveCard}
-        isUpdating={isUpdatingCard}
-        isDeleting={isDeletingCard}
-        isArchiving={isArchivingCard}
-      />
-    </>
+      {/* Cards */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
+          {filteredCards.map((card) => (
+            <Card
+              key={card.id}
+              card={card}
+              onClick={() => openCard(card.id)}
+            />
+          ))}
+        </SortableContext>
+      </div>
+
+      {/* Add card */}
+      <div className="p-2 border-t border-border/50">
+        <AddCard
+          onAdd={(title) => onCreateCard(column.id, title)}
+          isLoading={isCreatingCard}
+        />
+      </div>
+    </div>
   );
 }

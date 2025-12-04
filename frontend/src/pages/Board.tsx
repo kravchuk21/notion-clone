@@ -4,11 +4,15 @@ import { useBoard, useUpdateBoard, useDeleteBoard } from '@/hooks/useBoards';
 import { useCreateColumn, useUpdateColumn, useDeleteColumn, useReorderColumns } from '@/hooks/useColumns';
 import { useCreateCard, useUpdateCard, useDeleteCard, useMoveCard, useArchiveCard } from '@/hooks/useCards';
 import { useSocket } from '@/hooks/useSocket';
+import { useCardViewStore } from '@/store/cardViewStore';
 import { Layout } from '@/components/layout/Layout';
 import { BoardHeader } from '@/components/board/BoardHeader';
 import { BoardFilters } from '@/components/board/BoardFilters';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
 import { ArchivedCardsDrawer } from '@/components/board/ArchivedCardsDrawer';
+import { CardPeekPanel } from '@/components/card/CardPeekPanel';
+import { CardModal } from '@/components/card/CardModal';
+import { CardViewModeSelector } from '@/components/card/CardViewModeSelector';
 import { BoardSkeleton } from '@/components/ui/Skeleton';
 import { PageTransition } from '@/components/ui/PageTransition';
 
@@ -29,6 +33,9 @@ export function Board() {
 function BoardContent({ boardId }: { boardId: string }) {
   const { data: board, isLoading, error } = useBoard(boardId);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  
+  // Card view state
+  const { viewMode, selectedCardId } = useCardViewStore();
 
   // Real-time updates
   useSocket(boardId);
@@ -77,35 +84,67 @@ function BoardContent({ boardId }: { boardId: string }) {
               onOpenArchive={() => setIsArchiveOpen(true)}
               isUpdating={updateBoard.isPending}
               isDeleting={deleteBoard.isPending}
-            />
+            >
+              {/* View mode selector in header */}
+              <CardViewModeSelector className="ml-auto" />
+            </BoardHeader>
 
             <BoardFilters allTags={allTags} />
 
-            <BoardCanvas
-              board={board}
-              onCreateColumn={(title) => createColumn.mutate({ title })}
-              onUpdateColumn={(columnId, title) =>
-                updateColumn.mutate({ id: columnId, data: { title } })
-              }
-              onDeleteColumn={(columnId) => deleteColumn.mutate(columnId)}
-              onReorderColumns={(columnIds) =>
-                reorderColumns.mutate({ boardId: board.id, columnIds })
-              }
-              onCreateCard={(columnId, title) =>
-                createCard.mutate({ columnId, data: { title } })
-              }
-              onUpdateCard={(cardId, data) => updateCard.mutate({ id: cardId, data })}
-              onDeleteCard={(cardId) => deleteCard.mutate(cardId)}
-              onArchiveCard={(cardId) => archiveCard.mutate(cardId)}
-              onMoveCard={(cardId, columnId, position) =>
-                moveCard.mutate({ id: cardId, data: { columnId, position } })
-              }
-              isCreatingColumn={createColumn.isPending}
-              isCreatingCard={createCard.isPending}
-              isUpdatingCard={updateCard.isPending}
-              isDeletingCard={deleteCard.isPending}
-              isArchivingCard={archiveCard.isPending}
-            />
+            {/* Main content area */}
+            <div className="flex-1 overflow-hidden">
+              <BoardCanvas
+                board={board}
+                onCreateColumn={(title) => createColumn.mutate({ title })}
+                onUpdateColumn={(columnId, title) =>
+                  updateColumn.mutate({ id: columnId, data: { title } })
+                }
+                onDeleteColumn={(columnId) => deleteColumn.mutate(columnId)}
+                onReorderColumns={(columnIds) =>
+                  reorderColumns.mutate({ boardId: board.id, columnIds })
+                }
+                onCreateCard={(columnId, title) =>
+                  createCard.mutate({ columnId, data: { title } })
+                }
+                onUpdateCard={(cardId, data) => updateCard.mutate({ id: cardId, data })}
+                onDeleteCard={(cardId) => deleteCard.mutate(cardId)}
+                onArchiveCard={(cardId) => archiveCard.mutate(cardId)}
+                onMoveCard={(cardId, columnId, position) =>
+                  moveCard.mutate({ id: cardId, data: { columnId, position } })
+                }
+                isCreatingColumn={createColumn.isPending}
+                isCreatingCard={createCard.isPending}
+                isUpdatingCard={updateCard.isPending}
+                isDeletingCard={deleteCard.isPending}
+                isArchivingCard={archiveCard.isPending}
+              />
+            </div>
+
+            {/* Side Panel (Peek Mode) */}
+            {viewMode === 'peek' && (
+              <CardPeekPanel
+                board={board}
+                onUpdate={(cardId, data) => updateCard.mutate({ id: cardId, data })}
+                onDelete={(cardId) => deleteCard.mutate(cardId)}
+                onArchive={(cardId) => archiveCard.mutate(cardId)}
+                isUpdating={updateCard.isPending}
+                isDeleting={deleteCard.isPending}
+                isArchiving={archiveCard.isPending}
+              />
+            )}
+
+            {/* Modal Mode */}
+            {viewMode === 'modal' && (
+              <CardModal
+                board={board}
+                onUpdate={(cardId, data) => updateCard.mutate({ id: cardId, data })}
+                onDelete={(cardId) => deleteCard.mutate(cardId)}
+                onArchive={(cardId) => archiveCard.mutate(cardId)}
+                isUpdating={updateCard.isPending}
+                isDeleting={deleteCard.isPending}
+                isArchiving={archiveCard.isPending}
+              />
+            )}
 
             <ArchivedCardsDrawer
               boardId={board.id}
