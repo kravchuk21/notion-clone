@@ -1,11 +1,12 @@
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { RegisterForm } from '@/components/auth/RegisterForm';
+import { AuthLayout } from '@/components/auth/AuthLayout';
 import { useTheme } from '@/hooks/useTheme';
 
 export function Register() {
   const { isAuthenticated, isLoading } = useAuthStore();
-  useTheme(); // Apply theme
+  useTheme();
 
   if (isLoading) {
     return null;
@@ -16,9 +17,8 @@ export function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-secondary p-4">
+    <AuthLayout>
       <RegisterForm />
-    </div>
+    </AuthLayout>
   );
 }
-
