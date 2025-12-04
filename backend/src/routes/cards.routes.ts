@@ -26,8 +26,20 @@ router.delete('/cards/:id', cardsController.deleteCard);
 // Move card
 router.patch('/cards/:id/move', validate(moveCardSchema), cardsController.moveCard);
 
+// Archive card
+router.patch('/cards/:id/archive', cardsController.archiveCard);
+
+// Restore archived card
+router.patch('/cards/:id/restore', cardsController.restoreCard);
+
+// Permanently delete archived card
+router.delete('/cards/:id/permanent', cardsController.permanentDeleteCard);
+
 // Reorder cards
 router.patch('/cards/reorder', validate(reorderCardsSchema), cardsController.reorderCards);
+
+// Get archived cards for board
+router.get('/boards/:boardId/archived-cards', cardsController.getArchivedCards);
 
 export default router;
 

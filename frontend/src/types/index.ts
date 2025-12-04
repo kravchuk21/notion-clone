@@ -44,8 +44,16 @@ export interface Card {
   deadline: string | null;
   position: number;
   columnId: string;
+  archived: boolean;
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ArchivedCard extends Card {
+  column: {
+    title: string;
+  };
 }
 
 export interface ApiResponse<T> {

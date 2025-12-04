@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Trash2, Check, X } from 'lucide-react';
+import { Edit2, Trash2, Check, X, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -11,6 +11,7 @@ export interface BoardHeaderProps {
   icon: string | null;
   onUpdate: (data: { title?: string; icon?: string | null }) => void;
   onDelete: () => void;
+  onOpenArchive?: () => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
 }
@@ -20,6 +21,7 @@ export function BoardHeader({
   icon,
   onUpdate,
   onDelete,
+  onOpenArchive,
   isUpdating,
   isDeleting,
 }: BoardHeaderProps) {
@@ -99,14 +101,26 @@ export function BoardHeader({
           )}
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowDeleteConfirm(true)}
-          className="text-text-secondary hover:text-priority-high"
-        >
-          <Trash2 size={18} />
-        </Button>
+        <div className="flex items-center gap-2">
+          {onOpenArchive && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenArchive}
+              className="text-text-secondary hover:text-text-primary"
+            >
+              <Archive size={18} />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-text-secondary hover:text-priority-high"
+          >
+            <Trash2 size={18} />
+          </Button>
+        </div>
       </div>
 
       <ConfirmDialog

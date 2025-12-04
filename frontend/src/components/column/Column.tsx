@@ -17,9 +17,11 @@ export interface ColumnProps {
   onCreateCard: (columnId: string, title: string) => void;
   onUpdateCard: (id: string, data: UpdateCardInput) => void;
   onDeleteCard: (id: string) => void;
+  onArchiveCard: (id: string) => void;
   isCreatingCard?: boolean;
   isUpdatingCard?: boolean;
   isDeletingCard?: boolean;
+  isArchivingCard?: boolean;
 }
 
 export function Column({
@@ -29,9 +31,11 @@ export function Column({
   onCreateCard,
   onUpdateCard,
   onDeleteCard,
+  onArchiveCard,
   isCreatingCard,
   isUpdatingCard,
   isDeletingCard,
+  isArchivingCard,
 }: ColumnProps) {
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
 
@@ -143,8 +147,10 @@ export function Column({
         onClose={() => setSelectedCard(null)}
         onUpdate={onUpdateCard}
         onDelete={onDeleteCard}
+        onArchive={onArchiveCard}
         isUpdating={isUpdatingCard}
         isDeleting={isDeletingCard}
+        isArchiving={isArchivingCard}
       />
     </>
   );

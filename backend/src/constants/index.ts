@@ -50,6 +50,8 @@ export const ERROR_MESSAGES = {
   },
   CARD: {
     NOT_FOUND: 'Card not found',
+    ALREADY_ARCHIVED: 'Card is already archived',
+    NOT_ARCHIVED: 'Card is not archived',
   },
   USER: {
     NOT_FOUND: 'User not found',
@@ -86,6 +88,8 @@ export const SOCKET_EVENTS = {
     MOVED: 'card:moved',
     DELETED: 'card:deleted',
     REORDERED: 'cards:reordered',
+    ARCHIVED: 'card:archived',
+    RESTORED: 'card:restored',
   },
 } as const;
 

@@ -36,11 +36,13 @@ export interface BoardCanvasProps {
   onCreateCard: (columnId: string, title: string) => void;
   onUpdateCard: (id: string, data: UpdateCardInput) => void;
   onDeleteCard: (id: string) => void;
+  onArchiveCard: (id: string) => void;
   onMoveCard: (cardId: string, columnId: string, position: number) => void;
   isCreatingColumn?: boolean;
   isCreatingCard?: boolean;
   isUpdatingCard?: boolean;
   isDeletingCard?: boolean;
+  isArchivingCard?: boolean;
 }
 
 export function BoardCanvas({
@@ -52,11 +54,13 @@ export function BoardCanvas({
   onCreateCard,
   onUpdateCard,
   onDeleteCard,
+  onArchiveCard,
   onMoveCard,
   isCreatingColumn,
   isCreatingCard,
   isUpdatingCard,
   isDeletingCard,
+  isArchivingCard,
 }: BoardCanvasProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<DragType>(null);
@@ -241,9 +245,11 @@ export function BoardCanvas({
                 onCreateCard={onCreateCard}
                 onUpdateCard={onUpdateCard}
                 onDeleteCard={onDeleteCard}
+                onArchiveCard={onArchiveCard}
                 isCreatingCard={isCreatingCard}
                 isUpdatingCard={isUpdatingCard}
                 isDeletingCard={isDeletingCard}
+                isArchivingCard={isArchivingCard}
               />
             ))}
           </SortableContext>

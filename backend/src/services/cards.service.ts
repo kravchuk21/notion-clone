@@ -31,7 +31,7 @@ export async function createCard(columnId: string, userId: string, input: Create
   const boardId = await verifyColumnAccess(columnId, userId);
 
   const lastCard = await prisma.card.findFirst({
-    where: { columnId },
+    where: { columnId, archived: false },
     orderBy: { position: 'desc' },
   });
 
@@ -100,11 +100,12 @@ export async function deleteCard(cardId: string, userId: string) {
     where: { id: cardId },
   });
 
-  // Reorder remaining cards
+  // Reorder remaining cards (only non-archived)
   await prisma.card.updateMany({
     where: {
       columnId: card.columnId,
       position: { gt: card.position },
+      archived: false,
     },
     data: {
       position: { decrement: 1 },
@@ -145,6 +146,7 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
           where: {
             columnId: oldColumnId,
             position: { gt: oldPosition, lte: newPosition },
+            archived: false,
           },
           data: { position: { decrement: 1 } },
         });
@@ -154,6 +156,7 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
           where: {
             columnId: oldColumnId,
             position: { gte: newPosition, lt: oldPosition },
+            archived: false,
           },
           data: { position: { increment: 1 } },
         });
@@ -165,6 +168,7 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
         where: {
           columnId: oldColumnId,
           position: { gt: oldPosition },
+          archived: false,
         },
         data: { position: { decrement: 1 } },
       });
@@ -174,6 +178,7 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
         where: {
           columnId: newColumnId,
           position: { gte: newPosition },
+          archived: false,
         },
         data: { position: { increment: 1 } },
       });
@@ -218,10 +223,142 @@ export async function reorderCards(columnId: string, userId: string, cardIds: st
   );
 
   const cards = await prisma.card.findMany({
-    where: { columnId },
+    where: { columnId, archived: false },
     orderBy: { position: 'asc' },
   });
 
   return { cards, boardId };
+}
+
+/**
+ * Archives a card (soft delete)
+ * @throws AppError if card not found
+ */
+export async function archiveCard(cardId: string, userId: string) {
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    include: { column: { include: { board: true } } },
+  });
+
+  if (!card || card.column.board.userId !== userId) {
+    throw createError(ERROR_MESSAGES.CARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  if (card.archived) {
+    throw createError(ERROR_MESSAGES.CARD.ALREADY_ARCHIVED, HTTP_STATUS.BAD_REQUEST);
+  }
+
+  const archivedCard = await prisma.card.update({
+    where: { id: cardId },
+    data: {
+      archived: true,
+      archivedAt: new Date(),
+    },
+  });
+
+  // Reorder remaining cards in the column
+  await prisma.card.updateMany({
+    where: {
+      columnId: card.columnId,
+      position: { gt: card.position },
+      archived: false,
+    },
+    data: {
+      position: { decrement: 1 },
+    },
+  });
+
+  return { card: archivedCard, boardId: card.column.boardId, columnId: card.columnId };
+}
+
+/**
+ * Restores an archived card
+ * @throws AppError if card not found or not archived
+ */
+export async function restoreCard(cardId: string, userId: string) {
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    include: { column: { include: { board: true } } },
+  });
+
+  if (!card || card.column.board.userId !== userId) {
+    throw createError(ERROR_MESSAGES.CARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  if (!card.archived) {
+    throw createError(ERROR_MESSAGES.CARD.NOT_ARCHIVED, HTTP_STATUS.BAD_REQUEST);
+  }
+
+  // Get the last position in the column
+  const lastCard = await prisma.card.findFirst({
+    where: { columnId: card.columnId, archived: false },
+    orderBy: { position: 'desc' },
+  });
+
+  const newPosition = lastCard ? lastCard.position + 1 : 0;
+
+  const restoredCard = await prisma.card.update({
+    where: { id: cardId },
+    data: {
+      archived: false,
+      archivedAt: null,
+      position: newPosition,
+    },
+  });
+
+  return { card: restoredCard, boardId: card.column.boardId, columnId: card.columnId };
+}
+
+/**
+ * Gets all archived cards for a board
+ */
+export async function getArchivedCards(boardId: string, userId: string) {
+  const board = await prisma.board.findUnique({
+    where: { id: boardId },
+  });
+
+  if (!board || board.userId !== userId) {
+    throw createError(ERROR_MESSAGES.BOARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  const archivedCards = await prisma.card.findMany({
+    where: {
+      column: { boardId },
+      archived: true,
+    },
+    include: {
+      column: {
+        select: { title: true },
+      },
+    },
+    orderBy: { archivedAt: 'desc' },
+  });
+
+  return archivedCards;
+}
+
+/**
+ * Permanently deletes an archived card
+ * @throws AppError if card not found or not archived
+ */
+export async function permanentDeleteCard(cardId: string, userId: string) {
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    include: { column: { include: { board: true } } },
+  });
+
+  if (!card || card.column.board.userId !== userId) {
+    throw createError(ERROR_MESSAGES.CARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  if (!card.archived) {
+    throw createError(ERROR_MESSAGES.CARD.NOT_ARCHIVED, HTTP_STATUS.BAD_REQUEST);
+  }
+
+  await prisma.card.delete({
+    where: { id: cardId },
+  });
+
+  return { success: true, boardId: card.column.boardId };
 }
 

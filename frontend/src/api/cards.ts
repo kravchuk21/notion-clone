@@ -1,6 +1,6 @@
 import api from './client';
 import { extractData } from './utils';
-import type { Card, ApiResponse, CreateCardInput, UpdateCardInput, MoveCardInput, ReorderCardsInput } from '@/types';
+import type { Card, ArchivedCard, ApiResponse, CreateCardInput, UpdateCardInput, MoveCardInput, ReorderCardsInput } from '@/types';
 
 export const cardsApi = {
   async create(columnId: string, data: CreateCardInput): Promise<Card> {
@@ -25,6 +25,25 @@ export const cardsApi = {
   async reorder(data: ReorderCardsInput): Promise<Card[]> {
     const response = await api.patch<ApiResponse<Card[]>>('/cards/reorder', data);
     return extractData(response);
+  },
+
+  async archive(id: string): Promise<Card> {
+    const response = await api.patch<ApiResponse<Card>>(`/cards/${id}/archive`);
+    return extractData(response);
+  },
+
+  async restore(id: string): Promise<Card> {
+    const response = await api.patch<ApiResponse<Card>>(`/cards/${id}/restore`);
+    return extractData(response);
+  },
+
+  async getArchived(boardId: string): Promise<ArchivedCard[]> {
+    const response = await api.get<ApiResponse<ArchivedCard[]>>(`/boards/${boardId}/archived-cards`);
+    return extractData(response);
+  },
+
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/cards/${id}/permanent`);
   },
 };
 

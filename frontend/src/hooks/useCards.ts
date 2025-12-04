@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cardsApi } from '@/api/cards';
-import type { CreateCardInput, UpdateCardInput, MoveCardInput, ReorderCardsInput, BoardWithDetails } from '@/types';
+import type { CreateCardInput, UpdateCardInput, MoveCardInput, ReorderCardsInput, BoardWithDetails, ArchivedCard } from '@/types';
 import toast from 'react-hot-toast';
 import { QUERY_KEYS, SUCCESS_MESSAGES } from '@/constants';
 
@@ -97,6 +97,64 @@ export function useReorderCards(boardId: string) {
   return useMutation({
     mutationFn: (data: ReorderCardsInput) => cardsApi.reorder(data),
     ...optimistic,
+  });
+}
+
+/**
+ * Hook to get archived cards for a board
+ */
+export function useArchivedCards(boardId: string) {
+  return useQuery<ArchivedCard[]>({
+    queryKey: [QUERY_KEYS.BOARDS, boardId, 'archived'],
+    queryFn: () => cardsApi.getArchived(boardId),
+    enabled: !!boardId,
+  });
+}
+
+/**
+ * Hook to archive a card
+ */
+export function useArchiveCard(boardId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => cardsApi.archive(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS, boardId] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS, boardId, 'archived'] });
+      toast.success(SUCCESS_MESSAGES.CARD.ARCHIVED);
+    },
+  });
+}
+
+/**
+ * Hook to restore an archived card
+ */
+export function useRestoreCard(boardId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => cardsApi.restore(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS, boardId] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS, boardId, 'archived'] });
+      toast.success(SUCCESS_MESSAGES.CARD.RESTORED);
+    },
+  });
+}
+
+/**
+ * Hook to permanently delete an archived card
+ */
+export function usePermanentDeleteCard(boardId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => cardsApi.permanentDelete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS, boardId, 'archived'] });
+      toast.success(SUCCESS_MESSAGES.CARD.DELETED);
+    },
   });
 }
 

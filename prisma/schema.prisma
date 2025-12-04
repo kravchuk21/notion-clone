@@ -58,12 +58,15 @@ model Card {
   deadline    DateTime?
   position    Int
   columnId    String    @map("column_id")
+  archived    Boolean   @default(false)
+  archivedAt  DateTime? @map("archived_at")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
 
   @@index([columnId])
+  @@index([archived])
   @@map("cards")
 }
 

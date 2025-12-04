@@ -1,13 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useBoard, useUpdateBoard, useDeleteBoard } from '@/hooks/useBoards';
 import { useCreateColumn, useUpdateColumn, useDeleteColumn, useReorderColumns } from '@/hooks/useColumns';
-import { useCreateCard, useUpdateCard, useDeleteCard, useMoveCard } from '@/hooks/useCards';
+import { useCreateCard, useUpdateCard, useDeleteCard, useMoveCard, useArchiveCard } from '@/hooks/useCards';
 import { useSocket } from '@/hooks/useSocket';
 import { Layout } from '@/components/layout/Layout';
 import { BoardHeader } from '@/components/board/BoardHeader';
 import { BoardFilters } from '@/components/board/BoardFilters';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
+import { ArchivedCardsDrawer } from '@/components/board/ArchivedCardsDrawer';
 import { BoardSkeleton } from '@/components/ui/Skeleton';
 import { PageTransition } from '@/components/ui/PageTransition';
 
@@ -27,6 +28,7 @@ export function Board() {
  */
 function BoardContent({ boardId }: { boardId: string }) {
   const { data: board, isLoading, error } = useBoard(boardId);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
 
   // Real-time updates
   useSocket(boardId);
@@ -42,6 +44,7 @@ function BoardContent({ boardId }: { boardId: string }) {
   const updateCard = useUpdateCard(boardId);
   const deleteCard = useDeleteCard(boardId);
   const moveCard = useMoveCard(boardId);
+  const archiveCard = useArchiveCard(boardId);
 
   // Collect all unique tags from cards
   const allTags = useMemo(() => {
@@ -71,6 +74,7 @@ function BoardContent({ boardId }: { boardId: string }) {
               icon={board.icon}
               onUpdate={(data) => updateBoard.mutate({ id: board.id, data })}
               onDelete={() => deleteBoard.mutate(board.id)}
+              onOpenArchive={() => setIsArchiveOpen(true)}
               isUpdating={updateBoard.isPending}
               isDeleting={deleteBoard.isPending}
             />
@@ -92,6 +96,7 @@ function BoardContent({ boardId }: { boardId: string }) {
               }
               onUpdateCard={(cardId, data) => updateCard.mutate({ id: cardId, data })}
               onDeleteCard={(cardId) => deleteCard.mutate(cardId)}
+              onArchiveCard={(cardId) => archiveCard.mutate(cardId)}
               onMoveCard={(cardId, columnId, position) =>
                 moveCard.mutate({ id: cardId, data: { columnId, position } })
               }
@@ -99,6 +104,13 @@ function BoardContent({ boardId }: { boardId: string }) {
               isCreatingCard={createCard.isPending}
               isUpdatingCard={updateCard.isPending}
               isDeletingCard={deleteCard.isPending}
+              isArchivingCard={archiveCard.isPending}
+            />
+
+            <ArchivedCardsDrawer
+              boardId={board.id}
+              isOpen={isArchiveOpen}
+              onClose={() => setIsArchiveOpen(false)}
             />
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, Tag } from 'lucide-react';
+import { X, Trash2, Calendar, Tag, Archive } from 'lucide-react';
 import type { Card, Priority, UpdateCardInput } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -15,8 +15,10 @@ export interface CardModalProps {
   onClose: () => void;
   onUpdate: (id: string, data: UpdateCardInput) => void;
   onDelete: (id: string) => void;
+  onArchive?: (id: string) => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
+  isArchiving?: boolean;
 }
 
 export function CardModal({
@@ -25,8 +27,10 @@ export function CardModal({
   onClose,
   onUpdate,
   onDelete,
+  onArchive,
   isUpdating,
   isDeleting,
+  isArchiving,
 }: CardModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -200,13 +204,28 @@ export function CardModal({
 
         {/* Actions */}
         <div className="flex justify-between mt-6 pt-4 border-t border-border">
-          <Button
-            variant="danger"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
-            <Trash2 size={16} />
-            Удалить
-          </Button>
+          <div className="flex gap-2">
+            {onArchive && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  onArchive(card.id);
+                  onClose();
+                }}
+                isLoading={isArchiving}
+              >
+                <Archive size={16} />
+                В архив
+              </Button>
+            )}
+            <Button
+              variant="danger"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 size={16} />
+              Удалить
+            </Button>
+          </div>
           <div className="flex gap-3">
             <Button variant="secondary" onClick={onClose}>
               Отмена

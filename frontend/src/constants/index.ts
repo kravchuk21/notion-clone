@@ -32,6 +32,8 @@ export const SOCKET_EVENTS = {
     MOVED: 'card:moved',
     DELETED: 'card:deleted',
     REORDERED: 'cards:reordered',
+    ARCHIVED: 'card:archived',
+    RESTORED: 'card:restored',
   },
 } as const;
 
@@ -59,6 +61,8 @@ export const SUCCESS_MESSAGES = {
   CARD: {
     CREATED: 'Карточка создана',
     DELETED: 'Карточка удалена',
+    ARCHIVED: 'Карточка перемещена в архив',
+    RESTORED: 'Карточка восстановлена',
   },
   AUTH: {
     WELCOME: 'Добро пожаловать!',

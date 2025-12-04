@@ -46,6 +46,7 @@ export async function getBoardById(boardId: string, userId: string) {
         orderBy: { position: 'asc' },
         include: {
           cards: {
+            where: { archived: false },
             orderBy: { position: 'asc' },
           },
         },

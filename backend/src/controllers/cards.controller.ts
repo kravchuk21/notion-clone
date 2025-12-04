@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types/index.js';
 import * as cardsService from '../services/cards.service.js';
+import * as boardsService from '../services/boards.service.js';
 import {
   CreateCardInput,
   UpdateCardInput,
@@ -152,6 +153,107 @@ export async function reorderCards(
     });
 
     res.json({ success: true, data: cards });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Archives a card (soft delete)
+ */
+export async function archiveCard(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
+    const { card, boardId } = await cardsService.archiveCard(req.params.id, userId);
+
+    const io = getIO();
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.ARCHIVED, card);
+
+    res.json({ success: true, data: card });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Restores an archived card
+ */
+export async function restoreCard(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
+    const { card, boardId } = await cardsService.restoreCard(req.params.id, userId);
+
+    const io = getIO();
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.RESTORED, card);
+
+    res.json({ success: true, data: card });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Gets archived cards for a board
+ */
+export async function getArchivedCards(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
+    const cards = await cardsService.getArchivedCards(req.params.boardId, userId);
+
+    res.json({ success: true, data: cards });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Permanently deletes an archived card
+ */
+export async function permanentDeleteCard(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
+    const { boardId } = await cardsService.permanentDeleteCard(req.params.id, userId);
+
+    const io = getIO();
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.DELETED, req.params.id);
+
+    res.json({ success: true, message: 'Card permanently deleted' });
   } catch (error) {
     next(error);
   }
