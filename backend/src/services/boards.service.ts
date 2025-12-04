@@ -2,6 +2,8 @@ import { prisma } from '../lib/prisma.js';
 import { createError } from '../middleware/errorHandler.js';
 import { CreateBoardInput, UpdateBoardInput } from '../schemas/boards.schema.js';
 
+const DEFAULT_COLUMNS = ['To Do', 'In Progress', 'Done'];
+
 export async function getUserBoards(userId: string) {
   return prisma.board.findMany({
     where: { userId },
@@ -37,11 +39,31 @@ export async function getBoardById(boardId: string, userId: string) {
 }
 
 export async function createBoard(userId: string, input: CreateBoardInput) {
-  return prisma.board.create({
-    data: {
-      title: input.title,
-      userId,
-    },
+  return prisma.$transaction(async (tx) => {
+    const board = await tx.board.create({
+      data: {
+        title: input.title,
+        userId,
+      },
+    });
+
+    await tx.column.createMany({
+      data: DEFAULT_COLUMNS.map((title, index) => ({
+        title,
+        position: index,
+        boardId: board.id,
+      })),
+    });
+
+    return tx.board.findUnique({
+      where: { id: board.id },
+      include: {
+        columns: {
+          orderBy: { position: 'asc' },
+          include: { cards: true },
+        },
+      },
+    });
   });
 }
 
@@ -82,4 +104,3 @@ export async function verifyBoardOwnership(boardId: string, userId: string): Pro
   });
   return !!board;
 }
-
