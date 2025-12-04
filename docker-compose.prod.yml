@@ -1,0 +1,20 @@
+# Production override - use with: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  backend:
+    build:
+      target: production
+    environment:
+      NODE_ENV: production
+    command: npm run start
+    restart: always
+
+  frontend:
+    build:
+      target: production
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
+    ports:
+      - "80:80"
+    restart: always
+
