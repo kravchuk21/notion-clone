@@ -3,6 +3,8 @@ import {
   DndContext,
   DragOverlay,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -10,6 +12,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
+  CollisionDetection,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -67,6 +70,30 @@ export function BoardCanvas({
   );
 
   const columnIds = useMemo(() => board.columns.map((c) => c.id), [board.columns]);
+
+  // Custom collision detection: prioritize columns when dragging columns
+  const customCollisionDetection: CollisionDetection = useCallback((args) => {
+    // If dragging a column, only detect collisions with other columns
+    if (activeType === 'column') {
+      const columnCollisions = rectIntersection({
+        ...args,
+        droppableContainers: args.droppableContainers.filter(
+          (container) => container.data.current?.type === 'column'
+        ),
+      });
+      if (columnCollisions.length > 0) {
+        return columnCollisions;
+      }
+    }
+
+    // For cards, first try pointerWithin, then closestCorners
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions;
+    }
+
+    return closestCorners(args);
+  }, [activeType]);
 
   const activeColumn = useMemo(() => {
     if (activeType !== 'column' || !activeId) return null;
@@ -143,10 +170,22 @@ export function BoardCanvas({
     if (!activeData) return;
 
     // Handle column reordering
-    if (activeData.type === 'column' && overData?.type === 'column') {
-      if (active.id !== over.id) {
+    if (activeData.type === 'column') {
+      let targetColumnId: string | null = null;
+
+      // If over a column directly
+      if (overData?.type === 'column') {
+        targetColumnId = over.id as string;
+      }
+      // If over a card, find its parent column
+      else if (overData?.type === 'card') {
+        const overCard = overData.card as CardType;
+        targetColumnId = overCard.columnId;
+      }
+
+      if (targetColumnId && active.id !== targetColumnId) {
         const oldIndex = board.columns.findIndex((c) => c.id === active.id);
-        const newIndex = board.columns.findIndex((c) => c.id === over.id);
+        const newIndex = board.columns.findIndex((c) => c.id === targetColumnId);
 
         if (oldIndex !== -1 && newIndex !== -1) {
           const newOrder = [...columnIds];
@@ -182,7 +221,7 @@ export function BoardCanvas({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -212,8 +251,21 @@ export function BoardCanvas({
 
       <DragOverlay>
         {activeColumn && (
-          <div className="w-72 bg-bg-secondary rounded-lg p-3 opacity-95 shadow-notion-xl rotate-2">
-            <h3 className="text-sm font-medium text-text-primary">{activeColumn.title}</h3>
+          <div className="w-72 bg-bg-secondary rounded-lg flex flex-col max-h-[calc(100vh-10rem)] opacity-95 shadow-notion-xl rotate-2">
+            <div className="p-3 border-b border-border/50">
+              <h3 className="text-sm font-medium text-text-primary">{activeColumn.title}</h3>
+              <span className="text-xs text-text-tertiary">{activeColumn.cards.length} cards</span>
+            </div>
+            <div className="flex-1 overflow-hidden p-2 space-y-2">
+              {activeColumn.cards.slice(0, 3).map((card) => (
+                <Card key={card.id} card={card} onClick={() => {}} />
+              ))}
+              {activeColumn.cards.length > 3 && (
+                <div className="text-xs text-text-tertiary text-center py-1">
+                  +{activeColumn.cards.length - 3} more
+                </div>
+              )}
+            </div>
           </div>
         )}
         {activeCard && (
