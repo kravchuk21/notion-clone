@@ -13,6 +13,8 @@ export const transitions = {
   smooth: { duration: 0.2, ease: [0.25, 0.1, 0.25, 1] },
   // Для page transitions
   page: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+  // Для auth форм - плавный переход без резких движений
+  auth: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
 } satisfies Record<string, Transition>;
 
 // ============================================
@@ -219,5 +221,74 @@ export const listItemVariants: Variants = {
     opacity: 0, 
     height: 0,
     transition: { duration: 0.15 },
+  },
+};
+
+// ============================================
+// Auth Page Animations
+// ============================================
+
+export const authFormVariants: Variants = {
+  initial: { opacity: 0, x: 20 },
+  animate: { 
+    opacity: 1, 
+    x: 0,
+    transition: transitions.auth,
+  },
+  exit: { 
+    opacity: 0, 
+    x: -20,
+    transition: { duration: 0.2 },
+  },
+};
+
+export const authStaggerContainer: Variants = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+export const authStaggerItem: Variants = {
+  initial: { opacity: 0, y: 16 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+  },
+};
+
+export const authIconVariants: Variants = {
+  initial: { opacity: 0, scale: 0.5, rotate: -180 },
+  animate: { 
+    opacity: 1, 
+    scale: 1, 
+    rotate: 0,
+    transition: { 
+      duration: 0.5, 
+      ease: [0.34, 1.56, 0.64, 1], // spring-like easing
+    },
+  },
+};
+
+export const authCardVariants: Variants = {
+  initial: { opacity: 0, y: 20, scale: 0.98 },
+  animate: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1], delay: 0.15 },
+  },
+};
+
+export const authFeatureVariants: Variants = {
+  initial: { opacity: 0, x: -20 },
+  animate: { 
+    opacity: 1, 
+    x: 0,
+    transition: { duration: 0.3, ease: 'easeOut' },
   },
 };

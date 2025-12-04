@@ -1,8 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CheckCircle2, Sparkles, Users } from 'lucide-react';
+import { 
+  authStaggerContainer, 
+  authStaggerItem, 
+  authIconVariants, 
+  authCardVariants,
+  authFeatureVariants 
+} from '@/lib/motion';
 import toast from 'react-hot-toast';
 
 export function RegisterForm() {
@@ -61,64 +70,151 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">Регистрация</h1>
-        <p className="text-text-secondary mt-2">Создайте новый аккаунт</p>
-      </div>
+    <motion.div 
+      className="w-full"
+      variants={authStaggerContainer}
+      initial="initial"
+      animate="animate"
+    >
+      {/* Header */}
+      <motion.div className="text-center mb-8" variants={authStaggerItem}>
+        <motion.div 
+          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-lg shadow-accent/25 mb-4"
+          variants={authIconVariants}
+        >
+          <Sparkles className="w-7 h-7 text-white" />
+        </motion.div>
+        <motion.h1 
+          className="text-2xl font-bold text-text-primary"
+          variants={authStaggerItem}
+        >
+          Создайте аккаунт
+        </motion.h1>
+        <motion.p 
+          className="text-text-secondary mt-2"
+          variants={authStaggerItem}
+        >
+          Начните организовывать задачи уже сегодня
+        </motion.p>
+      </motion.div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1.5">
-            Email
-          </label>
-          <Input
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={errors.email}
-          />
-        </div>
+      {/* Form card */}
+      <motion.div 
+        className="bg-bg-primary rounded-2xl border border-border p-6 shadow-lg shadow-black/5"
+        variants={authCardVariants}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <motion.div variants={authStaggerItem}>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
+              Email
+            </label>
+            <Input
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={errors.email}
+            />
+          </motion.div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1.5">
-            Пароль
-          </label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={errors.password}
-          />
-        </div>
+          <motion.div variants={authStaggerItem}>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
+              Пароль
+            </label>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={errors.password}
+            />
+          </motion.div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1.5">
-            Подтвердите пароль
-          </label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={errors.confirmPassword}
-          />
-        </div>
+          <motion.div variants={authStaggerItem}>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
+              Подтвердите пароль
+            </label>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={errors.confirmPassword}
+            />
+          </motion.div>
 
-        <Button type="submit" className="w-full" isLoading={isLoading}>
-          Создать аккаунт
-        </Button>
-      </form>
+          <motion.div variants={authStaggerItem}>
+            <Button type="submit" className="w-full" isLoading={isLoading}>
+              Создать аккаунт
+            </Button>
+          </motion.div>
+        </form>
 
-      <p className="text-center text-sm text-text-secondary mt-6">
-        Уже есть аккаунт?{' '}
-        <Link to="/login" className="text-accent hover:underline">
-          Войти
-        </Link>
-      </p>
-    </div>
+        <motion.p 
+          className="text-center text-sm text-text-secondary mt-5"
+          variants={authStaggerItem}
+        >
+          Уже есть аккаунт?{' '}
+          <Link to="/login" className="text-accent hover:underline font-medium">
+            Войти
+          </Link>
+        </motion.p>
+      </motion.div>
+
+      {/* Benefits */}
+      <motion.div 
+        className="mt-8 space-y-3"
+        variants={authStaggerItem}
+      >
+        {[
+          { 
+            icon: CheckCircle2, 
+            color: 'bg-priority-low/10', 
+            iconColor: 'text-priority-low',
+            title: 'Бесплатный план', 
+            desc: 'Без ограничений по времени' 
+          },
+          { 
+            icon: Users, 
+            color: 'bg-accent/10', 
+            iconColor: 'text-accent',
+            title: 'Командная работа', 
+            desc: 'Real-time синхронизация' 
+          },
+        ].map((item, index) => (
+          <motion.div
+            key={item.title}
+            className="flex items-center gap-3 p-3 rounded-xl bg-bg-primary/50 border border-border/50 hover:bg-bg-primary/80 transition-colors"
+            variants={authFeatureVariants}
+            custom={index}
+            whileHover={{ scale: 1.02, x: 4 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <motion.div 
+              className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center flex-shrink-0`}
+              whileHover={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 0.4 }}
+            >
+              <item.icon className={`w-4 h-4 ${item.iconColor}`} />
+            </motion.div>
+            <div>
+              <p className="text-sm font-medium text-text-primary">{item.title}</p>
+              <p className="text-xs text-text-secondary">{item.desc}</p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Bottom */}
+      <motion.div 
+        className="mt-6 text-center"
+        variants={authStaggerItem}
+      >
+        <p className="text-xs text-text-tertiary">
+          Регистрируясь, вы соглашаетесь с условиями использования
+        </p>
+      </motion.div>
+    </motion.div>
   );
 }
 
