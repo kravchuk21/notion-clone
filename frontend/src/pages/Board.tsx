@@ -92,7 +92,7 @@ function BoardContent({ boardId }: { boardId: string }) {
             <BoardFilters allTags={allTags} />
 
             {/* Main content area */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-auto">
               <BoardCanvas
                 board={board}
                 onCreateColumn={(title) => createColumn.mutate({ title })}

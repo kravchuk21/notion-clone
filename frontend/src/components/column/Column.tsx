@@ -95,7 +95,7 @@ export function Column({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex-shrink-0 w-72 bg-bg-secondary rounded-lg flex flex-col max-h-[calc(100vh-10rem)]',
+        'flex-shrink-0 w-72 bg-bg-secondary rounded-lg flex flex-col',
         isDragging && 'opacity-50'
       )}
     >
@@ -111,7 +111,7 @@ export function Column({
       </div>
 
       {/* Cards */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      <div className="flex-1 p-2 space-y-2">
         <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
           {filteredCards.map((card) => (
             <Card

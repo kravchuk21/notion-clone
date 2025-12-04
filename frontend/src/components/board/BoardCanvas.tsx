@@ -233,7 +233,7 @@ export function BoardCanvas({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex-1 overflow-x-auto p-6">
+      <div className="flex-1 overflow-auto p-6">
         <div className="flex gap-4 items-start">
           <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
             {board.columns.map((column) => (
