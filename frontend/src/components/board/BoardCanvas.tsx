@@ -16,7 +16,7 @@ import {
   horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import type { BoardWithDetails, ColumnWithCards, Card as CardType, UpdateCardInput } from '@/types';
+import type { BoardWithDetails, Card as CardType, UpdateCardInput } from '@/types';
 import { Column } from '@/components/column/Column';
 import { AddColumn } from '@/components/column/AddColumn';
 import { Card } from '@/components/card/Card';
@@ -212,12 +212,12 @@ export function BoardCanvas({
 
       <DragOverlay>
         {activeColumn && (
-          <div className="w-72 bg-bg-secondary rounded-lg p-3 opacity-90 shadow-notion-xl">
+          <div className="w-72 bg-bg-secondary rounded-lg p-3 opacity-95 shadow-notion-xl rotate-2">
             <h3 className="text-sm font-medium text-text-primary">{activeColumn.title}</h3>
           </div>
         )}
         {activeCard && (
-          <div className="opacity-90 shadow-notion-xl">
+          <div className="opacity-95 shadow-notion-xl rotate-1">
             <Card card={activeCard} onClick={() => {}} />
           </div>
         )}
@@ -225,4 +225,3 @@ export function BoardCanvas({
     </DndContext>
   );
 }
-

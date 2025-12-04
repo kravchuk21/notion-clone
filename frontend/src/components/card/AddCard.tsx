@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { cn } from '@/utils/cn';
 
 interface AddCardProps {
   onAdd: (title: string) => void;
@@ -28,7 +29,11 @@ export function AddCard({ onAdd, isLoading }: AddCardProps) {
     return (
       <button
         onClick={() => setIsAdding(true)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors"
+        className={cn(
+          'w-full flex items-center gap-2 px-3 py-2 text-sm',
+          'text-text-secondary hover:text-text-primary hover:bg-bg-hover',
+          'rounded-md transition-colors duration-150'
+        )}
       >
         <Plus size={16} />
         Добавить карточку
@@ -37,7 +42,7 @@ export function AddCard({ onAdd, isLoading }: AddCardProps) {
   }
 
   return (
-    <div className="p-2 bg-bg-primary rounded-lg border border-border">
+    <div className="p-2 bg-bg-primary rounded-lg border border-border animate-fade-in">
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -62,4 +67,3 @@ export function AddCard({ onAdd, isLoading }: AddCardProps) {
     </div>
   );
 }
-

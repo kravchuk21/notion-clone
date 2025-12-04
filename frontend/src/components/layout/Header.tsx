@@ -15,7 +15,10 @@ export function Header() {
     <header className="h-14 border-b border-border bg-bg-primary/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="h-full px-4 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 text-text-primary hover:text-accent transition-colors">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 text-text-primary hover:text-accent transition-colors"
+        >
           <LayoutDashboard size={24} />
           <span className="font-semibold text-lg hidden sm:inline">TaskFlow</span>
         </Link>
@@ -40,4 +43,3 @@ export function Header() {
     </header>
   );
 }
-

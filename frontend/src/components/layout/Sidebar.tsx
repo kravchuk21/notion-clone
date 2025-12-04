@@ -30,7 +30,8 @@ export function Sidebar() {
     <>
       <aside
         className={cn(
-          'h-[calc(100vh-3.5rem)] border-r border-border bg-bg-secondary transition-all duration-300',
+          'h-[calc(100vh-3.5rem)] border-r border-border bg-bg-secondary',
+          'transition-[width] duration-200 ease-out',
           isCollapsed ? 'w-14' : 'w-64'
         )}
       >
@@ -38,7 +39,9 @@ export function Sidebar() {
           {/* Header */}
           <div className="p-3 flex items-center justify-between">
             {!isCollapsed && (
-              <span className="text-sm font-medium text-text-secondary">Доски</span>
+              <span className="text-sm font-medium text-text-secondary">
+                Доски
+              </span>
             )}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -76,24 +79,27 @@ export function Sidebar() {
                 </p>
               )
             ) : (
-              boards?.map((board) => (
-                <Link
-                  key={board.id}
-                  to={`/board/${board.id}`}
-                  className={cn(
-                    'flex items-center gap-2 px-2 py-2 rounded-md transition-colors text-sm',
-                    location.pathname === `/board/${board.id}`
-                      ? 'bg-bg-hover text-text-primary'
-                      : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-                  )}
-                  title={board.title}
-                >
-                  <BoardIcon icon={board.icon} size="sm" />
-                  {!isCollapsed && (
-                    <span className="truncate">{board.title}</span>
-                  )}
-                </Link>
-              ))
+              <div className="space-y-1">
+                {boards?.map((board) => (
+                  <Link
+                    key={board.id}
+                    to={`/board/${board.id}`}
+                    className={cn(
+                      'flex items-center gap-2 px-2 py-2 rounded-md text-sm',
+                      'transition-colors duration-150',
+                      location.pathname === `/board/${board.id}`
+                        ? 'bg-bg-hover text-text-primary'
+                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                    )}
+                    title={board.title}
+                  >
+                    <BoardIcon icon={board.icon} size="sm" />
+                    {!isCollapsed && (
+                      <span className="truncate">{board.title}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
             )}
           </nav>
         </div>
@@ -141,4 +147,3 @@ export function Sidebar() {
     </>
   );
 }
-

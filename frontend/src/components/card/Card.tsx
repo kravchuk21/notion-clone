@@ -48,9 +48,10 @@ export const Card = memo(function Card({ card, onClick }: CardProps) {
       onClick={onClick}
       className={cn(
         'p-3 rounded-lg border border-border bg-bg-primary cursor-pointer',
-        'hover:border-border-hover hover:shadow-notion-md transition-all',
-        'active:cursor-grabbing',
-        isDragging && 'opacity-50 shadow-notion-lg scale-105'
+        'hover:border-border-hover hover:shadow-notion-md hover:-translate-y-0.5',
+        'active:scale-[0.98] active:cursor-grabbing',
+        'transition-all duration-150 ease-out',
+        isDragging && 'opacity-50 shadow-notion-lg scale-[1.02] z-50'
       )}
     >
       {/* Priority indicator */}
@@ -108,4 +109,3 @@ export const Card = memo(function Card({ card, onClick }: CardProps) {
     </div>
   );
 });
-

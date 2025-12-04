@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { cn } from '@/utils/cn';
 
 interface AddColumnProps {
   onAdd: (title: string) => void;
@@ -28,7 +29,12 @@ export function AddColumn({ onAdd, isLoading }: AddColumnProps) {
     return (
       <button
         onClick={() => setIsAdding(true)}
-        className="flex-shrink-0 w-72 h-12 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-text-secondary hover:border-border-hover hover:text-text-primary transition-colors"
+        className={cn(
+          'flex-shrink-0 w-72 h-12 flex items-center justify-center gap-2',
+          'rounded-lg border-2 border-dashed border-border',
+          'text-text-secondary hover:border-border-hover hover:text-text-primary',
+          'transition-colors duration-150'
+        )}
       >
         <Plus size={18} />
         Добавить колонку
@@ -37,7 +43,7 @@ export function AddColumn({ onAdd, isLoading }: AddColumnProps) {
   }
 
   return (
-    <div className="flex-shrink-0 w-72 p-3 bg-bg-secondary rounded-lg">
+    <div className="flex-shrink-0 w-72 p-3 bg-bg-secondary rounded-lg animate-fade-in">
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -62,4 +68,3 @@ export function AddColumn({ onAdd, isLoading }: AddColumnProps) {
     </div>
   );
 }
-

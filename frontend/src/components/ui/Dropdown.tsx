@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
+import { dropdownVariants } from '@/lib/motion';
 
 interface DropdownProps {
   trigger: ReactNode;
@@ -27,16 +29,22 @@ export function Dropdown({ trigger, children, align = 'left', className }: Dropd
     <div ref={dropdownRef} className={cn('relative', className)}>
       <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
 
-      {isOpen && (
-        <div
-          className={cn(
-            'absolute z-50 mt-1 min-w-[160px] rounded-md border border-border bg-bg-primary py-1 shadow-notion-lg animate-fade-in',
-            align === 'right' ? 'right-0' : 'left-0'
-          )}
-        >
-          {children}
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            variants={dropdownVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className={cn(
+              'absolute z-50 mt-1 min-w-[160px] rounded-md border border-border bg-bg-primary py-1 shadow-notion-lg overflow-hidden',
+              align === 'right' ? 'right-0' : 'left-0'
+            )}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -55,7 +63,9 @@ export function DropdownItem({ children, onClick, variant = 'default', className
   };
 
   return (
-    <button
+    <motion.button
+      whileHover={{ x: 2 }}
+      transition={{ duration: 0.15 }}
       onClick={onClick}
       className={cn(
         'w-full px-3 py-2 text-left text-sm transition-colors flex items-center gap-2',
@@ -64,7 +74,6 @@ export function DropdownItem({ children, onClick, variant = 'default', className
       )}
     >
       {children}
-    </button>
+    </motion.button>
   );
 }
-

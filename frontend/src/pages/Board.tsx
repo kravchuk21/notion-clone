@@ -9,6 +9,7 @@ import { BoardHeader } from '@/components/board/BoardHeader';
 import { BoardFilters } from '@/components/board/BoardFilters';
 import { BoardCanvas } from '@/components/board/BoardCanvas';
 import { BoardSkeleton } from '@/components/ui/Skeleton';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 export function Board() {
   const { id } = useParams<{ id: string }>();
@@ -51,47 +52,48 @@ export function Board() {
 
   return (
     <Layout>
-      {isLoading || !board ? (
-        <BoardSkeleton />
-      ) : (
-        <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-          <BoardHeader
-            title={board.title}
-            icon={board.icon}
-            onUpdate={(data) => updateBoard.mutate({ id: board.id, data })}
-            onDelete={() => deleteBoard.mutate(board.id)}
-            isUpdating={updateBoard.isPending}
-            isDeleting={deleteBoard.isPending}
-          />
+      <PageTransition>
+        {isLoading || !board ? (
+          <BoardSkeleton />
+        ) : (
+          <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+            <BoardHeader
+              title={board.title}
+              icon={board.icon}
+              onUpdate={(data) => updateBoard.mutate({ id: board.id, data })}
+              onDelete={() => deleteBoard.mutate(board.id)}
+              isUpdating={updateBoard.isPending}
+              isDeleting={deleteBoard.isPending}
+            />
 
-          <BoardFilters allTags={allTags} />
+            <BoardFilters allTags={allTags} />
 
-          <BoardCanvas
-            board={board}
-            onCreateColumn={(title) => createColumn.mutate({ title })}
-            onUpdateColumn={(columnId, title) =>
-              updateColumn.mutate({ id: columnId, data: { title } })
-            }
-            onDeleteColumn={(columnId) => deleteColumn.mutate(columnId)}
-            onReorderColumns={(columnIds) =>
-              reorderColumns.mutate({ boardId: board.id, columnIds })
-            }
-            onCreateCard={(columnId, title) =>
-              createCard.mutate({ columnId, data: { title } })
-            }
-            onUpdateCard={(cardId, data) => updateCard.mutate({ id: cardId, data })}
-            onDeleteCard={(cardId) => deleteCard.mutate(cardId)}
-            onMoveCard={(cardId, columnId, position) =>
-              moveCard.mutate({ id: cardId, data: { columnId, position } })
-            }
-            isCreatingColumn={createColumn.isPending}
-            isCreatingCard={createCard.isPending}
-            isUpdatingCard={updateCard.isPending}
-            isDeletingCard={deleteCard.isPending}
-          />
-        </div>
-      )}
+            <BoardCanvas
+              board={board}
+              onCreateColumn={(title) => createColumn.mutate({ title })}
+              onUpdateColumn={(columnId, title) =>
+                updateColumn.mutate({ id: columnId, data: { title } })
+              }
+              onDeleteColumn={(columnId) => deleteColumn.mutate(columnId)}
+              onReorderColumns={(columnIds) =>
+                reorderColumns.mutate({ boardId: board.id, columnIds })
+              }
+              onCreateCard={(columnId, title) =>
+                createCard.mutate({ columnId, data: { title } })
+              }
+              onUpdateCard={(cardId, data) => updateCard.mutate({ id: cardId, data })}
+              onDeleteCard={(cardId) => deleteCard.mutate(cardId)}
+              onMoveCard={(cardId, columnId, position) =>
+                moveCard.mutate({ id: cardId, data: { columnId, position } })
+              }
+              isCreatingColumn={createColumn.isPending}
+              isCreatingCard={createCard.isPending}
+              isUpdatingCard={updateCard.isPending}
+              isDeletingCard={deleteCard.isPending}
+            />
+          </div>
+        )}
+      </PageTransition>
     </Layout>
   );
 }
-

@@ -2,10 +2,20 @@ import { cn } from '@/utils/cn';
 
 interface SkeletonProps {
   className?: string;
+  /** Use shimmer effect instead of pulse */
+  shimmer?: boolean;
 }
 
-export function Skeleton({ className }: SkeletonProps) {
-  return <div className={cn('animate-pulse rounded bg-bg-tertiary', className)} />;
+export function Skeleton({ className, shimmer = true }: SkeletonProps) {
+  return (
+    <div 
+      className={cn(
+        'rounded',
+        shimmer ? 'skeleton-shimmer' : 'animate-pulse bg-bg-tertiary',
+        className
+      )} 
+    />
+  );
 }
 
 export function CardSkeleton() {
@@ -39,4 +49,3 @@ export function BoardSkeleton() {
     </div>
   );
 }
-

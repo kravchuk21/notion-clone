@@ -106,7 +106,19 @@
   }
 
   .skeleton {
-    @apply animate-pulse rounded bg-bg-tertiary;
+    @apply rounded bg-bg-tertiary;
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--bg-tertiary)) 0%,
+      rgb(var(--bg-hover)) 50%,
+      rgb(var(--bg-tertiary)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    @apply rounded;
   }
 }
 
@@ -184,4 +196,16 @@
 
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
