@@ -16,8 +16,7 @@ export function CardViewModeSelector({ className }: CardViewModeSelectorProps) {
   ];
 
   return (
-    // Hide on mobile - panel acts as fullscreen modal on small screens
-    <div className={cn('hidden md:inline-flex rounded-lg border border-border bg-bg-secondary p-0.5', className)}>
+    <div className={cn('inline-flex rounded-lg border border-border bg-bg-secondary p-0.5', className)}>
       {options.map((option) => {
         const Icon = option.icon;
         const isActive = viewMode === option.value;
@@ -36,7 +35,7 @@ export function CardViewModeSelector({ className }: CardViewModeSelectorProps) {
             title={`Открывать как ${option.label.toLowerCase()}`}
           >
             <Icon size={14} />
-            <span className="hidden lg:inline">{option.label}</span>
+            <span className="hidden sm:inline">{option.label}</span>
           </button>
         );
       })}

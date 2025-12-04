@@ -135,31 +135,28 @@ export function CardModal({
               onClick={closeCard}
             />
 
-            {/* Modal - fullscreen on mobile, centered on desktop */}
-            <div className="fixed inset-0 z-50 flex items-end xs:items-center justify-center xs:p-4 pointer-events-none">
+            {/* Modal */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
               <motion.div
                 variants={modalContentVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
                 className={cn(
-                  'w-full bg-bg-primary shadow-notion-xl pointer-events-auto flex flex-col',
-                  // Mobile: fullscreen from bottom
-                  'h-[95vh] rounded-t-2xl',
-                  // Desktop: centered modal
-                  'xs:h-auto xs:max-h-[90vh] xs:max-w-2xl xs:rounded-lg'
+                  'w-full max-w-2xl bg-bg-primary rounded-lg shadow-notion-xl pointer-events-auto',
+                  'max-h-[90vh] overflow-hidden flex flex-col'
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 xs:px-6 py-3 xs:py-4 border-b border-border shrink-0">
-                  {/* Title on mobile */}
-                  <h2 className="text-base font-semibold text-text-primary truncate xs:hidden">
-                    {card.title}
-                  </h2>
+                {/* Header with View/Edit Toggle */}
+                <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
+                  <CardViewToggle
+                    isEditing={isEditing}
+                    onToggle={() => setEditMode(!isEditing)}
+                  />
                   
-                  <div className="flex items-center gap-1 ml-auto">
-                    {/* Switch to panel - hide on mobile */}
+                  <div className="flex items-center gap-1">
+                    {/* Switch to panel */}
                     <button
                       type="button"
                       onClick={() => setViewMode('peek')}
@@ -181,16 +178,8 @@ export function CardModal({
                   </div>
                 </div>
 
-                {/* View/Edit Toggle */}
-                <div className="px-4 xs:px-6 py-3 border-b border-border shrink-0">
-                  <CardViewToggle
-                    isEditing={isEditing}
-                    onToggle={() => setEditMode(!isEditing)}
-                  />
-                </div>
-
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto px-4 xs:px-6 py-4">
+                <div className="flex-1 overflow-y-auto px-6 py-4">
                   {isEditing ? (
                     <CardEditMode
                       card={card}
@@ -205,25 +194,24 @@ export function CardModal({
 
                 {/* Footer actions (only in view mode) */}
                 {!isEditing && (
-                  <div className="px-4 xs:px-6 py-3 xs:py-4 border-t border-border flex items-center gap-2 shrink-0">
+                  <div className="px-6 py-4 border-t border-border flex items-center gap-2 shrink-0">
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={handleArchive}
                       isLoading={isArchiving}
-                      className="flex-1 xs:flex-none"
                     >
                       <Archive size={14} />
-                      <span className="hidden xs:inline">В архив</span>
+                      В архив
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="text-priority-high hover:bg-priority-high/10 flex-1 xs:flex-none"
+                      className="text-priority-high hover:bg-priority-high/10"
                     >
                       <Trash2 size={14} />
-                      <span className="hidden xs:inline">Удалить</span>
+                      Удалить
                     </Button>
                   </div>
                 )}

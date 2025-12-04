@@ -9,7 +9,7 @@ interface CardViewToggleProps {
 
 export function CardViewToggle({ isEditing, onToggle, disabled }: CardViewToggleProps) {
   return (
-    <div className="inline-flex rounded-lg border border-border bg-bg-secondary p-0.5 w-full xs:w-auto">
+    <div className="inline-flex rounded-lg border border-border bg-bg-secondary p-0.5">
       {/* View mode button */}
       <button
         type="button"
@@ -18,13 +18,13 @@ export function CardViewToggle({ isEditing, onToggle, disabled }: CardViewToggle
         }}
         disabled={disabled}
         className={cn(
-          'flex items-center justify-center gap-1.5 px-3 py-2 xs:py-1.5 rounded-md text-sm font-medium transition-all flex-1 xs:flex-none',
+          'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
           !isEditing
             ? 'bg-bg-primary text-text-primary shadow-sm'
             : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover cursor-pointer'
         )}
       >
-        <Eye size={16} className="xs:w-3.5 xs:h-3.5" />
+        <Eye size={14} />
         <span>Просмотр</span>
       </button>
       
@@ -36,13 +36,13 @@ export function CardViewToggle({ isEditing, onToggle, disabled }: CardViewToggle
         }}
         disabled={disabled}
         className={cn(
-          'flex items-center justify-center gap-1.5 px-3 py-2 xs:py-1.5 rounded-md text-sm font-medium transition-all flex-1 xs:flex-none',
+          'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
           isEditing
             ? 'bg-bg-primary text-text-primary shadow-sm'
             : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover cursor-pointer'
         )}
       >
-        <Pencil size={16} className="xs:w-3.5 xs:h-3.5" />
+        <Pencil size={14} />
         <span>Редактировать</span>
       </button>
     </div>

@@ -19,9 +19,9 @@ export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
   const deadlineOverdue = hasDeadline && isOverdue(card.deadline!);
 
   return (
-    <div className="space-y-4 xs:space-y-6">
+    <div className="space-y-6">
       {/* Column & Priority */}
-      <div className="flex items-center gap-2 xs:gap-3 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         {columnTitle && (
           <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-bg-hover rounded text-xs text-text-secondary">
             <Layers size={12} />
@@ -33,7 +33,7 @@ export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
 
       {/* Title */}
       <div>
-        <h2 className="text-lg xs:text-xl font-semibold text-text-primary leading-tight break-words">
+        <h2 className="text-xl font-semibold text-text-primary leading-tight break-words">
           {card.title}
         </h2>
       </div>
@@ -41,7 +41,7 @@ export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
       {/* Description */}
       {card.description ? (
         <div className="prose prose-sm max-w-none">
-          <p className="text-text-secondary whitespace-pre-wrap leading-relaxed text-sm xs:text-base">
+          <p className="text-text-secondary whitespace-pre-wrap leading-relaxed">
             {card.description}
           </p>
         </div>
@@ -56,12 +56,12 @@ export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
             <Tag size={12} />
             Метки
           </h4>
-          <div className="flex flex-wrap gap-1.5 xs:gap-2">
+          <div className="flex flex-wrap gap-2">
             {card.tags.map((tag, index) => (
               <span
                 key={tag}
                 className={cn(
-                  'inline-flex items-center gap-1.5 px-2 xs:px-2.5 py-0.5 xs:py-1 rounded text-xs xs:text-sm text-white',
+                  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-sm text-white',
                   getTagColor(index)
                 )}
               >
@@ -95,37 +95,29 @@ export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
 
       {/* Timestamps */}
       <div className="pt-4 border-t border-border space-y-1">
-        <div className="flex items-start gap-1.5 text-xs text-text-tertiary">
-          <Clock size={12} className="mt-0.5 shrink-0" />
+        <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
+          <Clock size={12} />
           <span>
             Создано: {new Date(card.createdAt).toLocaleDateString('ru-RU', {
               day: 'numeric',
-              month: 'short',
+              month: 'long',
               year: 'numeric',
-            })}{' '}
-            <span className="hidden xs:inline">
-              {new Date(card.createdAt).toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </span>
         </div>
         {card.updatedAt !== card.createdAt && (
-          <div className="flex items-start gap-1.5 text-xs text-text-tertiary">
-            <Clock size={12} className="mt-0.5 shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
+            <Clock size={12} />
             <span>
               Обновлено: {new Date(card.updatedAt).toLocaleDateString('ru-RU', {
                 day: 'numeric',
-                month: 'short',
+                month: 'long',
                 year: 'numeric',
-              })}{' '}
-              <span className="hidden xs:inline">
-                {new Date(card.updatedAt).toLocaleTimeString('ru-RU', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </span>
           </div>
         )}

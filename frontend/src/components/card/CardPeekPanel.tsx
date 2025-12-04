@@ -145,7 +145,7 @@ export function CardPeekPanel({
               initial="initial"
               animate="animate"
               exit="exit"
-              className="fixed inset-0 z-40 bg-black/30 md:bg-black/20 lg:bg-transparent"
+              className="fixed inset-0 z-40 bg-black/30 lg:bg-transparent"
               onClick={closeCard}
             />
 
@@ -155,104 +155,101 @@ export function CardPeekPanel({
               initial="initial"
               animate="animate"
               exit="exit"
-              style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? width : undefined }}
               className={cn(
-                'fixed z-50 bg-bg-primary shadow-notion-xl border-l border-border flex flex-col',
+                'fixed z-50 bg-bg-primary shadow-notion-xl flex flex-col',
                 // Mobile: fullscreen
-                'inset-0 top-0',
-                // Tablet: right side, wider
-                'md:left-auto md:right-0 md:top-14 md:w-[420px]',
-                // Desktop: resizable side panel
-                'lg:top-14',
+                'inset-0 border-0',
+                // Desktop (lg+): side panel
+                'lg:left-auto lg:right-0 lg:top-0 lg:bottom-0 lg:border-l lg:border-border',
                 isResizing && 'select-none'
               )}
+              style={{ 
+                // CSS variable for width, only used on lg+
+                '--panel-width': `${width}px`,
+              } as React.CSSProperties}
             >
-              {/* Resize handle - only on desktop */}
-              <div
-                onMouseDown={startResize}
-                className={cn(
-                  'absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hidden lg:block',
-                  'hover:bg-accent/50 transition-colors',
-                  isResizing && 'bg-accent'
-                )}
-              />
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                {/* Title on mobile */}
-                <h2 className="text-base font-semibold text-text-primary truncate md:hidden">
-                  {card.title}
-                </h2>
-                
-                <div className="flex items-center gap-1 ml-auto">
-                  {/* Expand to modal - hide on mobile */}
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('modal')}
-                    className="hidden md:flex p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
-                    title="Открыть как модал (M)"
-                  >
-                    <Maximize2 size={16} />
-                  </button>
-
-                  {/* Close */}
-                  <button
-                    type="button"
-                    onClick={closeCard}
-                    className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
-                    title="Закрыть (Esc)"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
-
-              {/* View/Edit Toggle */}
-              <div className="px-4 py-3 border-b border-border">
-                <CardViewToggle
-                  isEditing={isEditing}
-                  onToggle={() => setEditMode(!isEditing)}
+              {/* Width wrapper - applies width only on desktop */}
+              <div 
+                className="flex flex-col h-full w-full lg:w-[var(--panel-width)]"
+              >
+                {/* Resize handle - only on desktop */}
+                <div
+                  onMouseDown={startResize}
+                  className={cn(
+                    'absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hidden lg:block',
+                    'hover:bg-accent/50 transition-colors',
+                    isResizing && 'bg-accent'
+                  )}
                 />
-              </div>
 
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto px-4 py-4">
-                {isEditing ? (
-                  <CardEditMode
-                    card={card}
-                    onSave={handleUpdate}
-                    onCancel={() => setEditMode(false)}
-                    isLoading={isUpdating}
+                {/* Header with View/Edit Toggle */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+                  <CardViewToggle
+                    isEditing={isEditing}
+                    onToggle={() => setEditMode(!isEditing)}
                   />
-                ) : (
-                  <CardViewMode card={card} columnTitle={columnTitle} />
+                  
+                  <div className="flex items-center gap-1">
+                    {/* Expand to modal */}
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('modal')}
+                      className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                      title="Открыть как модал (M)"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+
+                    {/* Close */}
+                    <button
+                      type="button"
+                      onClick={closeCard}
+                      className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+                      title="Закрыть (Esc)"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto px-4 py-4">
+                  {isEditing ? (
+                    <CardEditMode
+                      card={card}
+                      onSave={handleUpdate}
+                      onCancel={() => setEditMode(false)}
+                      isLoading={isUpdating}
+                    />
+                  ) : (
+                    <CardViewMode card={card} columnTitle={columnTitle} />
+                  )}
+                </div>
+
+                {/* Footer actions (only in view mode) */}
+                {!isEditing && (
+                  <div className="px-4 py-3 border-t border-border flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleArchive}
+                      isLoading={isArchiving}
+                    >
+                      <Archive size={14} />
+                      В архив
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="text-priority-high hover:bg-priority-high/10"
+                    >
+                      <Trash2 size={14} />
+                      Удалить
+                    </Button>
+                  </div>
                 )}
               </div>
-
-              {/* Footer actions (only in view mode) */}
-              {!isEditing && (
-                <div className="px-4 py-3 border-t border-border flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleArchive}
-                    isLoading={isArchiving}
-                    className="flex-1 md:flex-none"
-                  >
-                    <Archive size={14} />
-                    <span className="hidden xs:inline">В архив</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="text-priority-high hover:bg-priority-high/10 flex-1 md:flex-none"
-                  >
-                    <Trash2 size={14} />
-                    <span className="hidden xs:inline">Удалить</span>
-                  </Button>
-                </div>
-              )}
             </motion.div>
           </>
         )}

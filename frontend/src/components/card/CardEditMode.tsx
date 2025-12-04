@@ -99,14 +99,14 @@ export function CardEditMode({ card, onSave, onCancel, isLoading }: CardEditMode
               type="button"
               onClick={() => setPriority(option.value as Priority)}
               className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition-colors flex-1 xs:flex-none justify-center xs:justify-start',
+                'flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition-colors',
                 priority === option.value
                   ? 'border-accent bg-accent/10'
                   : 'border-border hover:border-border-hover'
               )}
             >
               <span className={cn('w-2 h-2 rounded-full', option.color)} />
-              <span className="hidden xs:inline">{option.label}</span>
+              {option.label}
             </button>
           ))}
         </div>
@@ -125,7 +125,7 @@ export function CardEditMode({ card, onSave, onCancel, isLoading }: CardEditMode
             type="date"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className="flex-1 xs:flex-none xs:w-auto"
+            className="w-auto"
           />
           {deadline && (
             <Button
@@ -183,19 +183,18 @@ export function CardEditMode({ card, onSave, onCancel, isLoading }: CardEditMode
               }
             }}
           />
-          <Button variant="secondary" onClick={handleAddTag} type="button" className="shrink-0">
-            <span className="hidden xs:inline">Добавить</span>
-            <span className="xs:hidden">+</span>
+          <Button variant="secondary" onClick={handleAddTag} type="button">
+            Добавить
           </Button>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col-reverse xs:flex-row justify-end gap-2 xs:gap-3 pt-4 border-t border-border">
-        <Button variant="secondary" onClick={onCancel} type="button" className="w-full xs:w-auto">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
+        <Button variant="secondary" onClick={onCancel} type="button">
           Отмена
         </Button>
-        <Button onClick={handleSave} isLoading={isLoading} type="button" className="w-full xs:w-auto">
+        <Button onClick={handleSave} isLoading={isLoading} type="button">
           Сохранить
         </Button>
       </div>
