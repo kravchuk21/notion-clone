@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
+/** Common emoji options for board icons */
 const EMOJI_LIST = [
   // Objects & Documents
   '📋', '📝', '📌', '📎', '🗂️', '📁', '📂', '🗃️',
@@ -18,7 +19,7 @@ const EMOJI_LIST = [
   '📅', '⏰', '🔔', '💬', '✅', '❌', '⚠️', '💼',
 ];
 
-interface EmojiPickerProps {
+export interface EmojiPickerProps {
   onSelect: (emoji: string | null) => void;
   currentEmoji?: string | null;
 }

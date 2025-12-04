@@ -3,14 +3,35 @@ import { hashPassword, verifyPassword } from '../utils/password.js';
 import { generateToken } from '../utils/jwt.js';
 import { createError } from '../middleware/errorHandler.js';
 import { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
+import { HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 
-export async function registerUser(input: RegisterInput) {
+/** User fields to select for public responses */
+const USER_PUBLIC_SELECT = {
+  id: true,
+  email: true,
+  createdAt: true,
+} as const;
+
+interface AuthResult {
+  user: {
+    id: string;
+    email: string;
+    createdAt: Date;
+  };
+  token: string;
+}
+
+/**
+ * Registers a new user
+ * @throws AppError if email already exists
+ */
+export async function registerUser(input: RegisterInput): Promise<AuthResult> {
   const existingUser = await prisma.user.findUnique({
     where: { email: input.email },
   });
 
   if (existingUser) {
-    throw createError('Email already registered', 400);
+    throw createError(ERROR_MESSAGES.AUTH.EMAIL_EXISTS, HTTP_STATUS.BAD_REQUEST);
   }
 
   const passwordHash = await hashPassword(input.password);
@@ -20,11 +41,7 @@ export async function registerUser(input: RegisterInput) {
       email: input.email,
       passwordHash,
     },
-    select: {
-      id: true,
-      email: true,
-      createdAt: true,
-    },
+    select: USER_PUBLIC_SELECT,
   });
 
   const token = generateToken({ userId: user.id, email: user.email });
@@ -32,19 +49,23 @@ export async function registerUser(input: RegisterInput) {
   return { user, token };
 }
 
-export async function loginUser(input: LoginInput) {
+/**
+ * Authenticates a user with email and password
+ * @throws AppError if credentials are invalid
+ */
+export async function loginUser(input: LoginInput): Promise<AuthResult> {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
   });
 
   if (!user) {
-    throw createError('Invalid credentials', 401);
+    throw createError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
   }
 
   const isValid = await verifyPassword(input.password, user.passwordHash);
 
   if (!isValid) {
-    throw createError('Invalid credentials', 401);
+    throw createError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
   }
 
   const token = generateToken({ userId: user.id, email: user.email });
@@ -59,18 +80,18 @@ export async function loginUser(input: LoginInput) {
   };
 }
 
+/**
+ * Gets current user by ID
+ * @throws AppError if user not found
+ */
 export async function getCurrentUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      createdAt: true,
-    },
+    select: USER_PUBLIC_SELECT,
   });
 
   if (!user) {
-    throw createError('User not found', 404);
+    throw createError(ERROR_MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
   return user;

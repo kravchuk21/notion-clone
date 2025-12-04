@@ -7,40 +7,57 @@ import {
   MoveCardInput,
   ReorderCardsInput,
 } from '../schemas/cards.schema.js';
-import { getIO } from '../socket.js';
+import { getIO, getBoardRoom } from '../socket.js';
+import { HTTP_STATUS, SOCKET_EVENTS } from '../constants/index.js';
 
+/**
+ * Creates a new card in a column
+ */
 export async function createCard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
     const columnId = req.params.columnId;
     const input: CreateCardInput = req.body;
-    const { card, boardId } = await cardsService.createCard(columnId, req.user!.userId, input);
+    const { card, boardId } = await cardsService.createCard(columnId, userId, input);
 
-    // Emit to socket
     const io = getIO();
-    io.to(`board:${boardId}`).emit('card:created', card);
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.CREATED, card);
 
-    res.status(201).json({ success: true, data: card });
+    res.status(HTTP_STATUS.CREATED).json({ success: true, data: card });
   } catch (error) {
     next(error);
   }
 }
 
+/**
+ * Updates a card
+ */
 export async function updateCard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const input: UpdateCardInput = req.body;
-    const { card, boardId } = await cardsService.updateCard(req.params.id, req.user!.userId, input);
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
 
-    // Emit to socket
+    const input: UpdateCardInput = req.body;
+    const { card, boardId } = await cardsService.updateCard(req.params.id, userId, input);
+
     const io = getIO();
-    io.to(`board:${boardId}`).emit('card:updated', card);
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.UPDATED, card);
 
     res.json({ success: true, data: card });
   } catch (error) {
@@ -48,17 +65,25 @@ export async function updateCard(
   }
 }
 
+/**
+ * Deletes a card
+ */
 export async function deleteCard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const { boardId } = await cardsService.deleteCard(req.params.id, req.user!.userId);
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
 
-    // Emit to socket
+    const { boardId } = await cardsService.deleteCard(req.params.id, userId);
+
     const io = getIO();
-    io.to(`board:${boardId}`).emit('card:deleted', req.params.id);
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.DELETED, req.params.id);
 
     res.json({ success: true, message: 'Card deleted' });
   } catch (error) {
@@ -66,18 +91,26 @@ export async function deleteCard(
   }
 }
 
+/**
+ * Moves a card to a new column/position
+ */
 export async function moveCard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const input: MoveCardInput = req.body;
-    const result = await cardsService.moveCard(req.params.id, req.user!.userId, input);
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
 
-    // Emit to socket
+    const input: MoveCardInput = req.body;
+    const result = await cardsService.moveCard(req.params.id, userId, input);
+
     const io = getIO();
-    io.to(`board:${result.boardId}`).emit('card:moved', {
+    io.to(getBoardRoom(result.boardId)).emit(SOCKET_EVENTS.CARD.MOVED, {
       cardId: req.params.id,
       fromColumnId: result.fromColumnId,
       toColumnId: result.toColumnId,
@@ -90,22 +123,30 @@ export async function moveCard(
   }
 }
 
+/**
+ * Reorders cards within a column
+ */
 export async function reorderCards(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
     const input: ReorderCardsInput = req.body;
     const { cards, boardId } = await cardsService.reorderCards(
       input.columnId,
-      req.user!.userId,
+      userId,
       input.cardIds
     );
 
-    // Emit to socket
     const io = getIO();
-    io.to(`board:${boardId}`).emit('cards:reordered', {
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.CARD.REORDERED, {
       columnId: input.columnId,
       cardIds: input.cardIds,
     });

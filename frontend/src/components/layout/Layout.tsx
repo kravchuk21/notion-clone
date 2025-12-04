@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 
-interface LayoutProps {
+export interface LayoutProps {
   children: ReactNode;
   showSidebar?: boolean;
 }

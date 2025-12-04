@@ -3,9 +3,21 @@ import { Server } from 'socket.io';
 import cookie from 'cookie';
 import { verifyToken } from './utils/jwt.js';
 import { env } from './config/env.js';
+import { COOKIE, SOCKET_EVENTS, ERROR_MESSAGES } from './constants/index.js';
 
 let io: Server | null = null;
 
+/**
+ * Creates board room name from board ID
+ */
+export function getBoardRoom(boardId: string): string {
+  return `board:${boardId}`;
+}
+
+/**
+ * Sets up Socket.io server with authentication
+ * @param httpServer - HTTP server instance
+ */
 export function setupSocket(httpServer: HTTPServer): Server {
   io = new Server(httpServer, {
     cors: {
@@ -17,11 +29,11 @@ export function setupSocket(httpServer: HTTPServer): Server {
   // Authentication middleware
   io.use((socket, next) => {
     try {
-      const cookies = cookie.parse(socket.handshake.headers.cookie || '');
-      const token = cookies.token;
+      const cookies = cookie.parse(socket.handshake.headers.cookie ?? '');
+      const token = cookies[COOKIE.NAME];
 
       if (!token) {
-        return next(new Error('Authentication required'));
+        return next(new Error(ERROR_MESSAGES.AUTH.AUTHENTICATION_REQUIRED));
       }
 
       const payload = verifyToken(token);
@@ -29,22 +41,20 @@ export function setupSocket(httpServer: HTTPServer): Server {
       socket.data.email = payload.email;
       next();
     } catch {
-      next(new Error('Invalid token'));
+      next(new Error(ERROR_MESSAGES.AUTH.INVALID_TOKEN));
     }
   });
 
   io.on('connection', (socket) => {
     console.log(`✅ Socket connected: ${socket.data.userId}`);
 
-    // Join board room
-    socket.on('board:join', (boardId: string) => {
-      socket.join(`board:${boardId}`);
+    socket.on(SOCKET_EVENTS.BOARD.JOIN, (boardId: string) => {
+      socket.join(getBoardRoom(boardId));
       console.log(`User ${socket.data.userId} joined board:${boardId}`);
     });
 
-    // Leave board room
-    socket.on('board:leave', (boardId: string) => {
-      socket.leave(`board:${boardId}`);
+    socket.on(SOCKET_EVENTS.BOARD.LEAVE, (boardId: string) => {
+      socket.leave(getBoardRoom(boardId));
       console.log(`User ${socket.data.userId} left board:${boardId}`);
     });
 
@@ -57,9 +67,13 @@ export function setupSocket(httpServer: HTTPServer): Server {
   return io;
 }
 
+/**
+ * Gets the Socket.io server instance
+ * @throws Error if socket not initialized
+ */
 export function getIO(): Server {
   if (!io) {
-    throw new Error('Socket.io not initialized');
+    throw new Error(ERROR_MESSAGES.SOCKET.NOT_INITIALIZED);
   }
   return io;
 }

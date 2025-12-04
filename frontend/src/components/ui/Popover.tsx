@@ -2,10 +2,10 @@ import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/utils/cn';
 
-interface PopoverProps {
+export interface PopoverProps {
   isOpen: boolean;
   onClose: () => void;
-  triggerRef: React.RefObject<HTMLElement>;
+  triggerRef: React.RefObject<HTMLElement | null>;
   children: React.ReactNode;
   align?: 'start' | 'center' | 'end';
   className?: string;

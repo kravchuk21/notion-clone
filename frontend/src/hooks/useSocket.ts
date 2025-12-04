@@ -1,8 +1,25 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getSocket, connectSocket, joinBoard, leaveBoard } from '@/lib/socket';
+import { QUERY_KEYS, SOCKET_EVENTS } from '@/constants';
 
-export function useSocket(boardId: string | null) {
+/** All socket events that trigger board data refresh */
+const BOARD_REFRESH_EVENTS = [
+  SOCKET_EVENTS.CARD.CREATED,
+  SOCKET_EVENTS.CARD.UPDATED,
+  SOCKET_EVENTS.CARD.MOVED,
+  SOCKET_EVENTS.CARD.DELETED,
+  SOCKET_EVENTS.CARD.REORDERED,
+  SOCKET_EVENTS.COLUMN.CREATED,
+  SOCKET_EVENTS.COLUMN.UPDATED,
+  SOCKET_EVENTS.COLUMN.REORDERED,
+  SOCKET_EVENTS.COLUMN.DELETED,
+] as const;
+
+/**
+ * Hook to subscribe to real-time board updates via Socket.io
+ */
+export function useSocket(boardId: string | null): void {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -10,72 +27,43 @@ export function useSocket(boardId: string | null) {
 
     connectSocket();
     const socket = getSocket();
+    const boardQueryKey = [QUERY_KEYS.BOARDS, boardId];
 
-    socket.on('connect', () => {
+    const invalidateBoard = () => {
+      queryClient.invalidateQueries({ queryKey: boardQueryKey });
+    };
+
+    const handleConnect = () => {
       joinBoard(boardId);
-    });
+    };
+
+    const handleBoardUpdated = () => {
+      invalidateBoard();
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS] });
+    };
+
+    socket.on('connect', handleConnect);
 
     // If already connected, join immediately
     if (socket.connected) {
       joinBoard(boardId);
     }
 
-    // Card events
-    socket.on('card:created', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
+    // Subscribe to all board refresh events
+    BOARD_REFRESH_EVENTS.forEach((event) => {
+      socket.on(event, invalidateBoard);
     });
 
-    socket.on('card:updated', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    socket.on('card:moved', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    socket.on('card:deleted', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    socket.on('cards:reordered', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    // Column events
-    socket.on('column:created', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    socket.on('column:updated', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    socket.on('column:reordered', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    socket.on('column:deleted', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-    });
-
-    // Board events
-    socket.on('board:updated', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards', boardId] });
-      queryClient.invalidateQueries({ queryKey: ['boards'] });
-    });
+    // Board update also refreshes the boards list
+    socket.on(SOCKET_EVENTS.BOARD.UPDATED, handleBoardUpdated);
 
     return () => {
       leaveBoard(boardId);
-      socket.off('card:created');
-      socket.off('card:updated');
-      socket.off('card:moved');
-      socket.off('card:deleted');
-      socket.off('cards:reordered');
-      socket.off('column:created');
-      socket.off('column:updated');
-      socket.off('column:reordered');
-      socket.off('column:deleted');
-      socket.off('board:updated');
+      socket.off('connect', handleConnect);
+      BOARD_REFRESH_EVENTS.forEach((event) => {
+        socket.off(event, invalidateBoard);
+      });
+      socket.off(SOCKET_EVENTS.BOARD.UPDATED, handleBoardUpdated);
     };
   }, [boardId, queryClient]);
 }

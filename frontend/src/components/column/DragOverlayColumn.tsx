@@ -4,7 +4,7 @@ import { cn } from '@/utils/cn';
 import { Badge } from '@/components/ui/Badge';
 import { PRIORITY_LABELS } from '@/utils/constants';
 
-interface DragOverlayColumnProps {
+export interface DragOverlayColumnProps {
   column: ColumnWithCards;
 }
 
@@ -40,7 +40,7 @@ export function DragOverlayColumn({ column }: DragOverlayColumnProps) {
       {/* Card previews */}
       <div className="flex-1 p-2 space-y-2 overflow-hidden">
         {visibleCards.map((card) => {
-          const priorityVariant = `priority-${card.priority.toLowerCase()}` as const;
+          const priorityVariant = `priority-${card.priority.toLowerCase()}` as 'priority-high' | 'priority-medium' | 'priority-low';
           return (
             <div
               key={card.id}

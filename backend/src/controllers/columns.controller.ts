@@ -2,42 +2,59 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types/index.js';
 import * as columnsService from '../services/columns.service.js';
 import { CreateColumnInput, UpdateColumnInput, ReorderColumnsInput } from '../schemas/columns.schema.js';
-import { getIO } from '../socket.js';
+import { getIO, getBoardRoom } from '../socket.js';
+import { HTTP_STATUS, SOCKET_EVENTS } from '../constants/index.js';
 
+/**
+ * Creates a new column in a board
+ */
 export async function createColumn(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
     const boardId = req.params.boardId;
     const input: CreateColumnInput = req.body;
-    const column = await columnsService.createColumn(boardId, req.user!.userId, input);
+    const column = await columnsService.createColumn(boardId, userId, input);
 
-    // Emit to socket
     const io = getIO();
-    io.to(`board:${boardId}`).emit('column:created', column);
+    io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.COLUMN.CREATED, column);
 
-    res.status(201).json({ success: true, data: column });
+    res.status(HTTP_STATUS.CREATED).json({ success: true, data: column });
   } catch (error) {
     next(error);
   }
 }
 
+/**
+ * Updates a column
+ */
 export async function updateColumn(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const input: UpdateColumnInput = req.body;
-    const column = await columnsService.updateColumn(req.params.id, req.user!.userId, input);
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
 
-    // Get boardId for socket emission
+    const input: UpdateColumnInput = req.body;
+    const column = await columnsService.updateColumn(req.params.id, userId, input);
+
     const boardId = await columnsService.getColumnBoardId(req.params.id);
     if (boardId) {
       const io = getIO();
-      io.to(`board:${boardId}`).emit('column:updated', column);
+      io.to(getBoardRoom(boardId)).emit(SOCKET_EVENTS.COLUMN.UPDATED, column);
     }
 
     res.json({ success: true, data: column });
@@ -46,17 +63,25 @@ export async function updateColumn(
   }
 }
 
+/**
+ * Deletes a column
+ */
 export async function deleteColumn(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const result = await columnsService.deleteColumn(req.params.id, req.user!.userId);
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
 
-    // Emit to socket
+    const result = await columnsService.deleteColumn(req.params.id, userId);
+
     const io = getIO();
-    io.to(`board:${result.boardId}`).emit('column:deleted', req.params.id);
+    io.to(getBoardRoom(result.boardId)).emit(SOCKET_EVENTS.COLUMN.DELETED, req.params.id);
 
     res.json({ success: true, message: 'Column deleted' });
   } catch (error) {
@@ -64,22 +89,30 @@ export async function deleteColumn(
   }
 }
 
+/**
+ * Reorders columns within a board
+ */
 export async function reorderColumns(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
     const input: ReorderColumnsInput = req.body;
     const columns = await columnsService.reorderColumns(
       input.boardId,
-      req.user!.userId,
+      userId,
       input.columnIds
     );
 
-    // Emit to socket
     const io = getIO();
-    io.to(`board:${input.boardId}`).emit('column:reordered', input.columnIds);
+    io.to(getBoardRoom(input.boardId)).emit(SOCKET_EVENTS.COLUMN.REORDERED, input.columnIds);
 
     res.json({ success: true, data: columns });
   } catch (error) {

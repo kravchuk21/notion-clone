@@ -1,7 +1,12 @@
 import { prisma } from '../lib/prisma.js';
 import { createError } from '../middleware/errorHandler.js';
 import { CreateCardInput, UpdateCardInput, MoveCardInput } from '../schemas/cards.schema.js';
+import { HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 
+/**
+ * Verifies user has access to a column and returns boardId
+ * @throws AppError if column not found or user doesn't have access
+ */
 async function verifyColumnAccess(columnId: string, userId: string): Promise<string> {
   const column = await prisma.column.findUnique({
     where: { id: columnId },
@@ -9,16 +14,22 @@ async function verifyColumnAccess(columnId: string, userId: string): Promise<str
   });
 
   if (!column || column.board.userId !== userId) {
-    throw createError('Column not found', 404);
+    throw createError(ERROR_MESSAGES.COLUMN.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
   return column.boardId;
 }
 
+/** Default priority for new cards */
+const DEFAULT_PRIORITY = 'MEDIUM';
+
+/**
+ * Creates a new card in a column
+ * @throws AppError if column not found
+ */
 export async function createCard(columnId: string, userId: string, input: CreateCardInput) {
   const boardId = await verifyColumnAccess(columnId, userId);
 
-  // Get max position
   const lastCard = await prisma.card.findFirst({
     where: { columnId },
     orderBy: { position: 'desc' },
@@ -30,8 +41,8 @@ export async function createCard(columnId: string, userId: string, input: Create
     data: {
       title: input.title,
       description: input.description,
-      priority: input.priority || 'MEDIUM',
-      tags: input.tags || [],
+      priority: input.priority ?? DEFAULT_PRIORITY,
+      tags: input.tags ?? [],
       deadline: input.deadline ? new Date(input.deadline) : null,
       position,
       columnId,
@@ -41,6 +52,10 @@ export async function createCard(columnId: string, userId: string, input: Create
   return { card, boardId };
 }
 
+/**
+ * Updates a card
+ * @throws AppError if card not found
+ */
 export async function updateCard(cardId: string, userId: string, input: UpdateCardInput) {
   const card = await prisma.card.findUnique({
     where: { id: cardId },
@@ -48,7 +63,7 @@ export async function updateCard(cardId: string, userId: string, input: UpdateCa
   });
 
   if (!card || card.column.board.userId !== userId) {
-    throw createError('Card not found', 404);
+    throw createError(ERROR_MESSAGES.CARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
   const updatedCard = await prisma.card.update({
@@ -67,6 +82,10 @@ export async function updateCard(cardId: string, userId: string, input: UpdateCa
   return { card: updatedCard, boardId: card.column.boardId };
 }
 
+/**
+ * Deletes a card and reorders remaining cards
+ * @throws AppError if card not found
+ */
 export async function deleteCard(cardId: string, userId: string) {
   const card = await prisma.card.findUnique({
     where: { id: cardId },
@@ -74,7 +93,7 @@ export async function deleteCard(cardId: string, userId: string) {
   });
 
   if (!card || card.column.board.userId !== userId) {
-    throw createError('Card not found', 404);
+    throw createError(ERROR_MESSAGES.CARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
   await prisma.card.delete({
@@ -95,6 +114,10 @@ export async function deleteCard(cardId: string, userId: string) {
   return { success: true, boardId: card.column.boardId, columnId: card.columnId };
 }
 
+/**
+ * Moves a card to a new column and/or position
+ * @throws AppError if card or target column not found
+ */
 export async function moveCard(cardId: string, userId: string, input: MoveCardInput) {
   const card = await prisma.card.findUnique({
     where: { id: cardId },
@@ -102,7 +125,7 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
   });
 
   if (!card || card.column.board.userId !== userId) {
-    throw createError('Card not found', 404);
+    throw createError(ERROR_MESSAGES.CARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
   // Verify target column access
@@ -113,7 +136,7 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
   const newColumnId = input.columnId;
   const newPosition = input.position;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: typeof prisma) => {
     // If moving within the same column
     if (oldColumnId === newColumnId) {
       if (oldPosition < newPosition) {
@@ -178,6 +201,10 @@ export async function moveCard(cardId: string, userId: string, input: MoveCardIn
   };
 }
 
+/**
+ * Reorders cards within a column
+ * @throws AppError if column not found
+ */
 export async function reorderCards(columnId: string, userId: string, cardIds: string[]) {
   const boardId = await verifyColumnAccess(columnId, userId);
 

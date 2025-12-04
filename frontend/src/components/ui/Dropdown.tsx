@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
 import { dropdownVariants } from '@/lib/motion';
 
-interface DropdownProps {
+export interface DropdownProps {
   trigger: ReactNode;
   children: ReactNode;
   align?: 'left' | 'right';
@@ -49,7 +49,7 @@ export function Dropdown({ trigger, children, align = 'left', className }: Dropd
   );
 }
 
-interface DropdownItemProps {
+export interface DropdownItemProps {
   children: ReactNode;
   onClick?: () => void;
   variant?: 'default' | 'danger';

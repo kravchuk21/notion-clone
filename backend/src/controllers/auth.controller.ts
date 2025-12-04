@@ -3,7 +3,11 @@ import { AuthenticatedRequest } from '../types/index.js';
 import { cookieConfig, COOKIE_NAME } from '../config/cookie.js';
 import * as authService from '../services/auth.service.js';
 import { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
+import { HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 
+/**
+ * Handles user registration
+ */
 export async function register(
   req: AuthenticatedRequest,
   res: Response,
@@ -14,12 +18,15 @@ export async function register(
     const { user, token } = await authService.registerUser(input);
 
     res.cookie(COOKIE_NAME, token, cookieConfig);
-    res.status(201).json({ success: true, data: { user } });
+    res.status(HTTP_STATUS.CREATED).json({ success: true, data: { user } });
   } catch (error) {
     next(error);
   }
 }
 
+/**
+ * Handles user login
+ */
 export async function login(
   req: AuthenticatedRequest,
   res: Response,
@@ -36,6 +43,9 @@ export async function login(
   }
 }
 
+/**
+ * Handles user logout
+ */
 export async function logout(
   _req: AuthenticatedRequest,
   res: Response
@@ -44,6 +54,9 @@ export async function logout(
   res.json({ success: true, message: 'Logged out successfully' });
 }
 
+/**
+ * Gets current authenticated user
+ */
 export async function me(
   req: AuthenticatedRequest,
   res: Response,
@@ -51,7 +64,10 @@ export async function me(
 ): Promise<void> {
   try {
     if (!req.user) {
-      res.status(401).json({ success: false, error: 'Not authenticated' });
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        error: ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED,
+      });
       return;
     }
 

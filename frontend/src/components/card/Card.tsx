@@ -9,7 +9,7 @@ import { formatDeadline, isOverdue } from '@/utils/date';
 import { PRIORITY_LABELS } from '@/utils/constants';
 import { getTagColor } from '@/utils/constants';
 
-interface CardProps {
+export interface CardProps {
   card: CardType;
   onClick: () => void;
 }
@@ -35,7 +35,7 @@ export const Card = memo(function Card({ card, onClick }: CardProps) {
     transition,
   };
 
-  const priorityVariant = `priority-${card.priority.toLowerCase()}` as const;
+  const priorityVariant = `priority-${card.priority.toLowerCase()}` as 'priority-high' | 'priority-medium' | 'priority-low';
   const hasDeadline = !!card.deadline;
   const deadlineOverdue = hasDeadline && isOverdue(card.deadline!);
 

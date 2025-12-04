@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn';
 import { PRIORITY_OPTIONS } from '@/utils/constants';
 import type { Priority } from '@/types';
 
-interface BoardFiltersProps {
+export interface BoardFiltersProps {
   allTags: string[];
 }
 

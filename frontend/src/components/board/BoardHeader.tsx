@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { BoardIcon } from '@/components/board/BoardIcon';
 
-interface BoardHeaderProps {
+export interface BoardHeaderProps {
   title: string;
   icon: string | null;
   onUpdate: (data: { title?: string; icon?: string | null }) => void;

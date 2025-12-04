@@ -4,7 +4,7 @@ import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
 import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
-interface ColumnHeaderProps {
+export interface ColumnHeaderProps {
   title: string;
   cardCount: number;
   totalCount: number;

@@ -1,9 +1,27 @@
 import { prisma } from '../lib/prisma.js';
 import { createError } from '../middleware/errorHandler.js';
 import { CreateBoardInput, UpdateBoardInput } from '../schemas/boards.schema.js';
+import { DEFAULT_BOARD_COLUMNS, HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 
-const DEFAULT_COLUMNS = ['To Do', 'In Progress', 'Done'];
+/**
+ * Verifies board ownership and returns board if found
+ * @throws AppError if board not found or user doesn't own it
+ */
+async function verifyBoardAccess(boardId: string, userId: string) {
+  const board = await prisma.board.findFirst({
+    where: { id: boardId, userId },
+  });
 
+  if (!board) {
+    throw createError(ERROR_MESSAGES.BOARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  return board;
+}
+
+/**
+ * Gets all boards for a user
+ */
 export async function getUserBoards(userId: string) {
   return prisma.board.findMany({
     where: { userId },
@@ -16,6 +34,10 @@ export async function getUserBoards(userId: string) {
   });
 }
 
+/**
+ * Gets a board by ID with columns and cards
+ * @throws AppError if board not found
+ */
 export async function getBoardById(boardId: string, userId: string) {
   const board = await prisma.board.findFirst({
     where: { id: boardId, userId },
@@ -32,14 +54,17 @@ export async function getBoardById(boardId: string, userId: string) {
   });
 
   if (!board) {
-    throw createError('Board not found', 404);
+    throw createError(ERROR_MESSAGES.BOARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
   return board;
 }
 
+/**
+ * Creates a new board with default columns
+ */
 export async function createBoard(userId: string, input: CreateBoardInput) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: typeof prisma) => {
     const board = await tx.board.create({
       data: {
         title: input.title,
@@ -48,7 +73,7 @@ export async function createBoard(userId: string, input: CreateBoardInput) {
     });
 
     await tx.column.createMany({
-      data: DEFAULT_COLUMNS.map((title, index) => ({
+      data: DEFAULT_BOARD_COLUMNS.map((title, index) => ({
         title,
         position: index,
         boardId: board.id,
@@ -67,14 +92,12 @@ export async function createBoard(userId: string, input: CreateBoardInput) {
   });
 }
 
+/**
+ * Updates a board
+ * @throws AppError if board not found
+ */
 export async function updateBoard(boardId: string, userId: string, input: UpdateBoardInput) {
-  const board = await prisma.board.findFirst({
-    where: { id: boardId, userId },
-  });
-
-  if (!board) {
-    throw createError('Board not found', 404);
-  }
+  await verifyBoardAccess(boardId, userId);
 
   return prisma.board.update({
     where: { id: boardId },
@@ -82,14 +105,12 @@ export async function updateBoard(boardId: string, userId: string, input: Update
   });
 }
 
+/**
+ * Deletes a board
+ * @throws AppError if board not found
+ */
 export async function deleteBoard(boardId: string, userId: string) {
-  const board = await prisma.board.findFirst({
-    where: { id: boardId, userId },
-  });
-
-  if (!board) {
-    throw createError('Board not found', 404);
-  }
+  await verifyBoardAccess(boardId, userId);
 
   await prisma.board.delete({
     where: { id: boardId },
@@ -98,6 +119,9 @@ export async function deleteBoard(boardId: string, userId: string) {
   return { success: true };
 }
 
+/**
+ * Checks if user owns a board (without throwing)
+ */
 export async function verifyBoardOwnership(boardId: string, userId: string): Promise<boolean> {
   const board = await prisma.board.findFirst({
     where: { id: boardId, userId },

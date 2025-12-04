@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/cn';
 
-interface AddColumnProps {
+export interface AddColumnProps {
   onAdd: (title: string) => void;
   isLoading?: boolean;
 }

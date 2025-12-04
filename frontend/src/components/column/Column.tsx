@@ -10,7 +10,7 @@ import { useFilterStore } from '@/store/filterStore';
 import { isOverdue } from '@/utils/date';
 import { cn } from '@/utils/cn';
 
-interface ColumnProps {
+export interface ColumnProps {
   column: ColumnWithCards;
   onUpdateColumn: (id: string, title: string) => void;
   onDeleteColumn: (id: string) => void;

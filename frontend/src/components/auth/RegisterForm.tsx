@@ -13,6 +13,7 @@ import {
   authFeatureVariants 
 } from '@/lib/motion';
 import toast from 'react-hot-toast';
+import { SUCCESS_MESSAGES } from '@/constants';
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ export function RegisterForm() {
     setIsLoading(true);
     try {
       await register({ email, password });
-      toast.success('Аккаунт создан!');
+      toast.success(SUCCESS_MESSAGES.AUTH.ACCOUNT_CREATED);
       navigate('/');
     } catch {
       // Error handled by API client

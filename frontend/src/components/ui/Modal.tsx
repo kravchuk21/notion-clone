@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { modalBackdropVariants, modalContentVariants } from '@/lib/motion';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;

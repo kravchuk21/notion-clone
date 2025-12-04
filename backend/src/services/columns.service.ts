@@ -2,14 +2,35 @@ import { prisma } from '../lib/prisma.js';
 import { createError } from '../middleware/errorHandler.js';
 import { verifyBoardOwnership } from './boards.service.js';
 import { CreateColumnInput, UpdateColumnInput } from '../schemas/columns.schema.js';
+import { HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 
+/**
+ * Verifies user has access to a column and returns the column with board
+ * @throws AppError if column not found or user doesn't have access
+ */
+async function verifyColumnAccess(columnId: string, userId: string) {
+  const column = await prisma.column.findUnique({
+    where: { id: columnId },
+    include: { board: true },
+  });
+
+  if (!column || column.board.userId !== userId) {
+    throw createError(ERROR_MESSAGES.COLUMN.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  return column;
+}
+
+/**
+ * Creates a new column in a board
+ * @throws AppError if board not found
+ */
 export async function createColumn(boardId: string, userId: string, input: CreateColumnInput) {
   const hasAccess = await verifyBoardOwnership(boardId, userId);
   if (!hasAccess) {
-    throw createError('Board not found', 404);
+    throw createError(ERROR_MESSAGES.BOARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
-  // Get max position
   const lastColumn = await prisma.column.findFirst({
     where: { boardId },
     orderBy: { position: 'desc' },
@@ -29,15 +50,12 @@ export async function createColumn(boardId: string, userId: string, input: Creat
   });
 }
 
+/**
+ * Updates a column
+ * @throws AppError if column not found
+ */
 export async function updateColumn(columnId: string, userId: string, input: UpdateColumnInput) {
-  const column = await prisma.column.findUnique({
-    where: { id: columnId },
-    include: { board: true },
-  });
-
-  if (!column || column.board.userId !== userId) {
-    throw createError('Column not found', 404);
-  }
+  await verifyColumnAccess(columnId, userId);
 
   return prisma.column.update({
     where: { id: columnId },
@@ -48,21 +66,17 @@ export async function updateColumn(columnId: string, userId: string, input: Upda
   });
 }
 
+/**
+ * Deletes a column and reorders remaining columns
+ * @throws AppError if column not found
+ */
 export async function deleteColumn(columnId: string, userId: string) {
-  const column = await prisma.column.findUnique({
-    where: { id: columnId },
-    include: { board: true },
-  });
-
-  if (!column || column.board.userId !== userId) {
-    throw createError('Column not found', 404);
-  }
+  const column = await verifyColumnAccess(columnId, userId);
 
   await prisma.column.delete({
     where: { id: columnId },
   });
 
-  // Reorder remaining columns
   await prisma.column.updateMany({
     where: {
       boardId: column.boardId,
@@ -76,13 +90,16 @@ export async function deleteColumn(columnId: string, userId: string) {
   return { success: true, boardId: column.boardId };
 }
 
+/**
+ * Reorders columns within a board
+ * @throws AppError if board not found
+ */
 export async function reorderColumns(boardId: string, userId: string, columnIds: string[]) {
   const hasAccess = await verifyBoardOwnership(boardId, userId);
   if (!hasAccess) {
-    throw createError('Board not found', 404);
+    throw createError(ERROR_MESSAGES.BOARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
-  // Update positions in transaction
   await prisma.$transaction(
     columnIds.map((id, index) =>
       prisma.column.update({
@@ -103,6 +120,9 @@ export async function reorderColumns(boardId: string, userId: string, columnIds:
   });
 }
 
+/**
+ * Gets the board ID for a column
+ */
 export async function getColumnBoardId(columnId: string): Promise<string | null> {
   const column = await prisma.column.findUnique({
     where: { id: columnId },

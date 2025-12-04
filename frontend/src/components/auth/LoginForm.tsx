@@ -13,6 +13,7 @@ import {
   authFeatureVariants 
 } from '@/lib/motion';
 import toast from 'react-hot-toast';
+import { SUCCESS_MESSAGES } from '@/constants';
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await login({ email, password });
-      toast.success('Добро пожаловать!');
+      toast.success(SUCCESS_MESSAGES.AUTH.WELCOME);
       navigate('/');
     } catch {
       // Error handled by API client

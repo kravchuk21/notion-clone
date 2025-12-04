@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 import { staggerContainer, staggerContainerFast, staggerItem, staggerItemScale } from '@/lib/motion';
 
-interface AnimatedListProps {
+export interface AnimatedListProps {
   children: ReactNode;
   className?: string;
   /** Use faster stagger timing */
@@ -22,7 +22,7 @@ export function AnimatedList({ children, className, fast = false }: AnimatedList
   );
 }
 
-interface AnimatedListItemProps {
+export interface AnimatedListItemProps {
   children: ReactNode;
   className?: string;
   /** Use scale animation instead of slide */

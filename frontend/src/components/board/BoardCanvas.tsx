@@ -23,8 +23,11 @@ import type { BoardWithDetails, Card as CardType, UpdateCardInput } from '@/type
 import { Column } from '@/components/column/Column';
 import { AddColumn } from '@/components/column/AddColumn';
 import { Card } from '@/components/card/Card';
+import { DND } from '@/constants';
 
-interface BoardCanvasProps {
+type DragType = 'column' | 'card' | null;
+
+export interface BoardCanvasProps {
   board: BoardWithDetails;
   onCreateColumn: (title: string) => void;
   onUpdateColumn: (id: string, title: string) => void;
@@ -56,12 +59,12 @@ export function BoardCanvas({
   isDeletingCard,
 }: BoardCanvasProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeType, setActiveType] = useState<'column' | 'card' | null>(null);
+  const [activeType, setActiveType] = useState<DragType>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: DND.ACTIVATION_DISTANCE,
       },
     }),
     useSensor(KeyboardSensor, {

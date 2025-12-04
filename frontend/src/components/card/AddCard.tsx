@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/cn';
 
-interface AddCardProps {
+export interface AddCardProps {
   onAdd: (title: string) => void;
   isLoading?: boolean;
 }

@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthHero } from './AuthHero';
 
-interface AuthLayoutProps {
+export interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
@@ -11,12 +11,12 @@ const formContainerVariants = {
   animate: { 
     opacity: 1, 
     x: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const },
   },
   exit: { 
     opacity: 0, 
     x: -30,
-    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
   },
 };
 

@@ -23,7 +23,7 @@ const itemVariants = {
   animate: { 
     opacity: 1, 
     x: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
   },
 };
 
@@ -34,7 +34,7 @@ const featureVariants = {
     x: 0,
     transition: { 
       duration: 0.4, 
-      ease: [0.25, 0.1, 0.25, 1],
+      ease: [0.25, 0.1, 0.25, 1] as const,
       delay: 0.5 + i * 0.1,
     },
   }),

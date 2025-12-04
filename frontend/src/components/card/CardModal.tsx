@@ -9,7 +9,7 @@ import { cn } from '@/utils/cn';
 import { PRIORITY_OPTIONS, getTagColor } from '@/utils/constants';
 import { formatDateForInput } from '@/utils/date';
 
-interface CardModalProps {
+export interface CardModalProps {
   card: Card | null;
   isOpen: boolean;
   onClose: () => void;

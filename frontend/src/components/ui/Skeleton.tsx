@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn';
 
-interface SkeletonProps {
+export interface SkeletonProps {
   className?: string;
   /** Use shimmer effect instead of pulse */
   shimmer?: boolean;

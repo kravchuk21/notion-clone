@@ -13,22 +13,35 @@ import { PageTransition } from '@/components/ui/PageTransition';
 
 export function Board() {
   const { id } = useParams<{ id: string }>();
-  const { data: board, isLoading, error } = useBoard(id!);
+  
+  // Early return if no id - this shouldn't happen with proper routing
+  if (!id) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <BoardContent boardId={id} />;
+}
+
+/**
+ * Internal component that handles board logic with guaranteed boardId
+ */
+function BoardContent({ boardId }: { boardId: string }) {
+  const { data: board, isLoading, error } = useBoard(boardId);
 
   // Real-time updates
-  useSocket(id || null);
+  useSocket(boardId);
 
   // Mutations
   const updateBoard = useUpdateBoard();
   const deleteBoard = useDeleteBoard();
-  const createColumn = useCreateColumn(id!);
-  const updateColumn = useUpdateColumn(id!);
-  const deleteColumn = useDeleteColumn(id!);
-  const reorderColumns = useReorderColumns(id!);
-  const createCard = useCreateCard(id!);
-  const updateCard = useUpdateCard(id!);
-  const deleteCard = useDeleteCard(id!);
-  const moveCard = useMoveCard(id!);
+  const createColumn = useCreateColumn(boardId);
+  const updateColumn = useUpdateColumn(boardId);
+  const deleteColumn = useDeleteColumn(boardId);
+  const reorderColumns = useReorderColumns(boardId);
+  const createCard = useCreateCard(boardId);
+  const updateCard = useUpdateCard(boardId);
+  const deleteCard = useDeleteCard(boardId);
+  const moveCard = useMoveCard(boardId);
 
   // Collect all unique tags from cards
   const allTags = useMemo(() => {
@@ -41,10 +54,6 @@ export function Board() {
     });
     return Array.from(tags);
   }, [board]);
-
-  if (!id) {
-    return <Navigate to="/" replace />;
-  }
 
   if (error) {
     return <Navigate to="/" replace />;

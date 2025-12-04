@@ -4,7 +4,7 @@ import { Popover } from '@/components/ui/Popover';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { cn } from '@/utils/cn';
 
-interface BoardIconProps {
+export interface BoardIconProps {
   icon: string | null;
   size?: 'sm' | 'md' | 'lg';
   editable?: boolean;
