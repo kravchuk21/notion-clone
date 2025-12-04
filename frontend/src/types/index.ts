@@ -9,6 +9,7 @@ export interface User {
 export interface Board {
   id: string;
   title: string;
+  icon: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -56,10 +57,12 @@ export interface ApiResponse<T> {
 
 export interface CreateBoardInput {
   title: string;
+  icon?: string;
 }
 
 export interface UpdateBoardInput {
   title?: string;
+  icon?: string | null;
 }
 
 export interface CreateColumnInput {

@@ -4,10 +4,12 @@ import { Edit2, Trash2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { BoardIcon } from '@/components/board/BoardIcon';
 
 interface BoardHeaderProps {
   title: string;
-  onUpdate: (title: string) => void;
+  icon: string | null;
+  onUpdate: (data: { title?: string; icon?: string | null }) => void;
   onDelete: () => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
@@ -15,6 +17,7 @@ interface BoardHeaderProps {
 
 export function BoardHeader({
   title,
+  icon,
   onUpdate,
   onDelete,
   isUpdating,
@@ -27,11 +30,15 @@ export function BoardHeader({
 
   const handleSave = () => {
     if (editTitle.trim() && editTitle !== title) {
-      onUpdate(editTitle.trim());
+      onUpdate({ title: editTitle.trim() });
     } else {
       setEditTitle(title);
     }
     setIsEditing(false);
+  };
+
+  const handleIconChange = (newIcon: string | null) => {
+    onUpdate({ icon: newIcon });
   };
 
   const handleDelete = () => {
@@ -74,6 +81,12 @@ export function BoardHeader({
             </div>
           ) : (
             <>
+              <BoardIcon
+                icon={icon}
+                size="lg"
+                editable
+                onChange={handleIconChange}
+              />
               <h1 className="text-xl font-semibold text-text-primary">{title}</h1>
               <Button
                 size="sm"

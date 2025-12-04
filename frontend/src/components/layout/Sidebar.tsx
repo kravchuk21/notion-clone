@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Plus, LayoutGrid, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBoards, useCreateBoard } from '@/hooks/useBoards';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { BoardIcon } from '@/components/board/BoardIcon';
 import { cn } from '@/utils/cn';
 
 export function Sidebar() {
@@ -87,7 +88,7 @@ export function Sidebar() {
                   )}
                   title={board.title}
                 >
-                  <LayoutGrid size={18} className="flex-shrink-0" />
+                  <BoardIcon icon={board.icon} size="sm" />
                   {!isCollapsed && (
                     <span className="truncate">{board.title}</span>
                   )}

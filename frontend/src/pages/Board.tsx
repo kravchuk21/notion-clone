@@ -57,7 +57,8 @@ export function Board() {
         <div className="flex flex-col h-[calc(100vh-3.5rem)]">
           <BoardHeader
             title={board.title}
-            onUpdate={(title) => updateBoard.mutate({ id: board.id, data: { title } })}
+            icon={board.icon}
+            onUpdate={(data) => updateBoard.mutate({ id: board.id, data })}
             onDelete={() => deleteBoard.mutate(board.id)}
             isUpdating={updateBoard.isPending}
             isDeleting={deleteBoard.isPending}
