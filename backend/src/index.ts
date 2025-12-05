@@ -10,12 +10,12 @@ setupSocket(httpServer);
 async function main() {
   await connectDatabase();
 
-  httpServer.listen(env.PORT, () => {
+  httpServer.listen(env.PORT, '0.0.0.0', () => {
     console.log(`
 🚀 Server running on port ${env.PORT}
 📊 Environment: ${env.NODE_ENV}
-🔗 API: http://localhost:${env.PORT}/api
-❤️  Health: http://localhost:${env.PORT}/api/health
+🔗 API: http://0.0.0.0:${env.PORT}/api
+❤️  Health: http://0.0.0.0:${env.PORT}/api/health
     `);
   });
 }
