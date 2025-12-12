@@ -1,6 +1,7 @@
 import { Calendar, Tag, Clock, Layers } from 'lucide-react';
-import type { Card } from '@/types';
+import type { Card, Attachment } from '@/types';
 import { Badge } from '@/components/ui/Badge';
+import { AttachmentList } from './AttachmentList';
 import { cn } from '@/utils/cn';
 import { formatDeadline, isOverdue } from '@/utils/date';
 import { PRIORITY_LABELS, getTagColor } from '@/utils/constants';
@@ -8,9 +9,15 @@ import { PRIORITY_LABELS, getTagColor } from '@/utils/constants';
 interface CardViewModeProps {
   card: Card;
   columnTitle?: string;
+  onDeleteAttachment?: (attachmentId: string) => void;
 }
 
-export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
+export function CardViewMode({
+  card,
+  columnTitle,
+  onDeleteAttachment
+}: CardViewModeProps) {
+  const attachments = card.attachments || [];
   const priorityVariant = `priority-${card.priority.toLowerCase()}` as 
     | 'priority-high' 
     | 'priority-medium' 
@@ -122,6 +129,12 @@ export function CardViewMode({ card, columnTitle }: CardViewModeProps) {
           </div>
         )}
       </div>
+
+      {/* Attachments */}
+      <AttachmentList
+        attachments={attachments}
+        onDeleteAttachment={onDeleteAttachment}
+      />
     </div>
   );
 }

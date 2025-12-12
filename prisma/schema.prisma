@@ -15,6 +15,7 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   boards Board[]
+  attachments Attachment[]
 
   @@map("users")
 }
@@ -64,10 +65,31 @@ model Card {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
 
   @@index([columnId])
   @@index([archived])
   @@map("cards")
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  filename     String   @map("filename")
+  originalName String   @map("original_name")
+  mimeType     String   @map("mime_type")
+  size         Int
+  path         String
+  cardId       String   @map("card_id")
+  userId       String   @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([userId])
+  @@map("attachments")
 }
 
 enum Priority {

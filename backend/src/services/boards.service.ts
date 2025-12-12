@@ -48,6 +48,11 @@ export async function getBoardById(boardId: string, userId: string) {
           cards: {
             where: { archived: false },
             orderBy: { position: 'asc' },
+            include: {
+              attachments: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
           },
         },
       },

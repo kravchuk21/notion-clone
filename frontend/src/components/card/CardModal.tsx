@@ -1,7 +1,7 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PanelRight, Archive, Trash2 } from 'lucide-react';
-import type { UpdateCardInput, BoardWithDetails } from '@/types';
+import type { UpdateCardInput, BoardWithDetails, Attachment } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CardViewMode } from './CardViewMode';
@@ -9,6 +9,7 @@ import { CardEditMode } from './CardEditMode';
 import { CardViewToggle } from './CardViewToggle';
 import { useCardViewStore } from '@/store/cardViewStore';
 import { useCardHotkeys } from '@/hooks/useCardHotkeys';
+import { attachmentsApi } from '@/api/attachments';
 import { modalBackdropVariants, modalContentVariants } from '@/lib/motion';
 import { cn } from '@/utils/cn';
 
@@ -44,7 +45,7 @@ export function CardModal({
   // Find selected card and its column
   const { card, columnTitle } = useMemo(() => {
     if (!selectedCardId) return { card: null, columnTitle: undefined };
-    
+
     for (const column of board.columns) {
       const foundCard = column.cards.find((c) => c.id === selectedCardId);
       if (foundCard) {
@@ -118,6 +119,15 @@ export function CardModal({
     }
   }, [card, onArchive, closeCard]);
 
+  const handleDeleteAttachment = useCallback(async (attachmentId: string) => {
+    try {
+      await attachmentsApi.delete(attachmentId);
+      // Board data will be updated via socket event
+    } catch (error) {
+      console.error('Failed to delete attachment:', error);
+    }
+  }, []);
+
   const isOpen = !!selectedCardId && !!card;
 
   return (
@@ -188,7 +198,11 @@ export function CardModal({
                       isLoading={isUpdating}
                     />
                   ) : (
-                    <CardViewMode card={card} columnTitle={columnTitle} />
+                    <CardViewMode
+                      card={card}
+                      columnTitle={columnTitle}
+                      onDeleteAttachment={handleDeleteAttachment}
+                    />
                   )}
                 </div>
 

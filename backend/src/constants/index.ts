@@ -53,6 +53,9 @@ export const ERROR_MESSAGES = {
     ALREADY_ARCHIVED: 'Card is already archived',
     NOT_ARCHIVED: 'Card is not archived',
   },
+  ATTACHMENT: {
+    NOT_FOUND: 'Attachment not found',
+  },
   USER: {
     NOT_FOUND: 'User not found',
   },

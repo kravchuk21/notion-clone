@@ -330,6 +330,9 @@ export async function getArchivedCards(boardId: string, userId: string) {
       column: {
         select: { title: true },
       },
+      attachments: {
+        orderBy: { createdAt: 'desc' },
+      },
     },
     orderBy: { archivedAt: 'desc' },
   });

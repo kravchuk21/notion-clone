@@ -48,6 +48,20 @@ export interface Card {
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  attachments?: Attachment[];
+}
+
+export interface Attachment {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  path: string;
+  cardId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ArchivedCard extends Card {
@@ -111,6 +125,11 @@ export interface ReorderColumnsInput {
 export interface ReorderCardsInput {
   columnId: string;
   cardIds: string[];
+}
+
+export interface UploadAttachmentInput {
+  cardId: string;
+  file: File;
 }
 
 export interface LoginInput {

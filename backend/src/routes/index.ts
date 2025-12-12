@@ -3,6 +3,7 @@ import authRoutes from './auth.routes.js';
 import boardsRoutes from './boards.routes.js';
 import columnsRoutes from './columns.routes.js';
 import cardsRoutes from './cards.routes.js';
+import attachmentsRoutes from './attachments.routes.js';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/auth', authRoutes);
 router.use('/boards', boardsRoutes);
 router.use('/', columnsRoutes); // /boards/:boardId/columns, /columns/:id
 router.use('/', cardsRoutes);   // /columns/:columnId/cards, /cards/:id
+router.use('/', attachmentsRoutes); // /cards/:cardId/attachments, /attachments/:attachmentId
 
 export default router;
 

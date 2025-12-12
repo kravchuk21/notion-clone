@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Tag } from 'lucide-react';
-import type { Card, Priority, UpdateCardInput } from '@/types';
+import type { Card, Priority, UpdateCardInput, Attachment } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { FileUpload } from '@/components/ui/FileUpload';
+import { AttachmentList } from './AttachmentList';
+import { attachmentsApi } from '@/api/attachments';
 import { cn } from '@/utils/cn';
 import { PRIORITY_OPTIONS, getTagColor } from '@/utils/constants';
 import { formatDateForInput } from '@/utils/date';
@@ -14,13 +17,21 @@ interface CardEditModeProps {
   isLoading?: boolean;
 }
 
-export function CardEditMode({ card, onSave, onCancel, isLoading }: CardEditModeProps) {
+export function CardEditMode({
+  card,
+  onSave,
+  onCancel,
+  isLoading
+}: CardEditModeProps) {
+  const attachments = card.attachments || [];
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('MEDIUM');
   const [deadline, setDeadline] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setTitle(card.title);
@@ -55,6 +66,38 @@ export function CardEditMode({ card, onSave, onCancel, isLoading }: CardEditMode
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handleSave();
+    }
+  };
+
+  const handleFileSelect = async (files: File[]) => {
+    setSelectedFiles(files);
+    if (files.length === 0) return;
+
+    try {
+      setIsUploading(true);
+
+      // Upload files sequentially to avoid overwhelming the server
+      const uploadPromises = files.map(async (file) => {
+        const attachment = await attachmentsApi.upload(card.id, file);
+        return attachment;
+      });
+
+      await Promise.all(uploadPromises);
+
+      // Clear selected files - board data will be updated via socket
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error('Failed to upload files:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    try {
+      await attachmentsApi.delete(attachmentId);
+    } catch (error) {
+      console.error('Failed to delete attachment:', error);
     }
   };
 
@@ -188,6 +231,27 @@ export function CardEditMode({ card, onSave, onCancel, isLoading }: CardEditMode
           </Button>
         </div>
       </div>
+
+      {/* File Upload */}
+      <div>
+        <label className="block text-sm font-medium text-text-primary mb-1.5">
+          Прикрепить файлы
+        </label>
+        <FileUpload
+          onFileSelect={handleFileSelect}
+          disabled={isUploading}
+          maxFiles={5}
+          maxSize={10}
+        />
+      </div>
+
+      {/* Existing Attachments */}
+      {attachments.length > 0 && (
+        <AttachmentList
+          attachments={attachments}
+          onDeleteAttachment={handleDeleteAttachment}
+        />
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-border">

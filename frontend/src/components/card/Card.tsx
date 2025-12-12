@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Calendar, Tag } from 'lucide-react';
+import { Calendar, Tag, Paperclip } from 'lucide-react';
 import type { Card as CardType } from '@/types';
 import { cn } from '@/utils/cn';
 import { Badge } from '@/components/ui/Badge';
@@ -104,6 +104,14 @@ export const Card = memo(function Card({ card, onClick }: CardProps) {
         >
           <Calendar size={12} />
           <span>{formatDeadline(card.deadline!)}</span>
+        </div>
+      )}
+
+      {/* Attachments indicator */}
+      {card.attachments && card.attachments.length > 0 && (
+        <div className="flex items-center gap-1 text-xs text-text-secondary">
+          <Paperclip size={12} />
+          <span>{card.attachments.length} file{card.attachments.length > 1 ? 's' : ''}</span>
         </div>
       )}
     </div>
