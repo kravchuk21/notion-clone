@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { authApi } from '@/api/auth';
-import type { User, LoginInput, RegisterInput } from '@/types';
+import type { User, LoginInput, RegisterInput, UpdateProfileInput } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -11,6 +11,7 @@ interface AuthState {
   register: (data: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  updateProfile: (data: UpdateProfileInput) => Promise<void>;
   setUser: (user: User | null) => void;
 }
 
@@ -42,6 +43,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
+  },
+
+  updateProfile: async (data) => {
+    const user = await authApi.updateProfile(data);
+    set({ user });
   },
 
   setUser: (user) => {

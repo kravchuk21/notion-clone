@@ -3,6 +3,8 @@ export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 export interface User {
   id: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   createdAt: string;
 }
 
@@ -142,5 +144,12 @@ export interface LoginInput {
 export interface RegisterInput {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface UpdateProfileInput {
+  firstName?: string;
+  lastName?: string;
 }
 

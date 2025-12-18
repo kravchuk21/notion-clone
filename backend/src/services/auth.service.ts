@@ -9,6 +9,8 @@ import { HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 const USER_PUBLIC_SELECT = {
   id: true,
   email: true,
+  firstName: true,
+  lastName: true,
   createdAt: true,
 } as const;
 
@@ -40,6 +42,8 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
     data: {
       email: input.email,
       passwordHash,
+      firstName: input.firstName,
+      lastName: input.lastName,
     },
     select: USER_PUBLIC_SELECT,
   });
@@ -95,5 +99,42 @@ export async function getCurrentUser(userId: string) {
   }
 
   return user;
+}
+
+/**
+ * Gets user profile by ID
+ * @throws AppError if user not found
+ */
+export async function getUserProfile(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: USER_PUBLIC_SELECT,
+  });
+
+  if (!user) {
+    throw createError(ERROR_MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  return user;
+}
+
+/**
+ * Updates user profile
+ * @throws AppError if user not found
+ */
+export async function updateUserProfile(userId: string, input: { firstName?: string; lastName?: string }) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw createError(ERROR_MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: input,
+    select: USER_PUBLIC_SELECT,
+  });
 }
 

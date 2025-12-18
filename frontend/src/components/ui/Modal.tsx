@@ -35,15 +35,15 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none min-h-screen">
             <motion.div
               variants={modalContentVariants}
               initial="initial"
               animate="animate"
               exit="exit"
               className={cn(
-                'w-full bg-bg-primary rounded-lg shadow-notion-xl pointer-events-auto',
-                'max-h-[90vh] overflow-hidden flex flex-col',
+                'w-full bg-bg-primary rounded-xl shadow-notion-xl pointer-events-auto self-center',
+                'max-h-[90vh] overflow-hidden flex flex-col mx-auto',
                 sizes[size]
               )}
               onClick={(e) => e.stopPropagation()}

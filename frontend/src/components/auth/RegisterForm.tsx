@@ -19,10 +19,14 @@ export function RegisterForm() {
   const navigate = useNavigate();
   const { register } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -30,6 +34,18 @@ export function RegisterForm() {
 
   const validate = () => {
     const newErrors: typeof errors = {};
+
+    if (!firstName.trim()) {
+      newErrors.firstName = 'Имя обязательно';
+    } else if (firstName.trim().length > 50) {
+      newErrors.firstName = 'Имя слишком длинное';
+    }
+
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Фамилия обязательна';
+    } else if (lastName.trim().length > 50) {
+      newErrors.lastName = 'Фамилия слишком длинная';
+    }
 
     if (!email) {
       newErrors.email = 'Email обязателен';
@@ -60,7 +76,12 @@ export function RegisterForm() {
 
     setIsLoading(true);
     try {
-      await register({ email, password });
+      await register({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email,
+        password
+      });
       toast.success(SUCCESS_MESSAGES.AUTH.ACCOUNT_CREATED);
       navigate('/');
     } catch {
@@ -105,6 +126,34 @@ export function RegisterForm() {
         variants={authCardVariants}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div variants={authStaggerItem}>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Имя
+              </label>
+              <Input
+                type="text"
+                placeholder="Иван"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                error={errors.firstName}
+              />
+            </motion.div>
+
+            <motion.div variants={authStaggerItem}>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Фамилия
+              </label>
+              <Input
+                type="text"
+                placeholder="Иванов"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                error={errors.lastName}
+              />
+            </motion.div>
+          </div>
+
           <motion.div variants={authStaggerItem}>
             <label className="block text-sm font-medium text-text-primary mb-1.5">
               Email

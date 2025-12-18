@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Button } from '@/components/ui/Button';
+import { ProfileModal } from '@/components/auth/ProfileModal';
 
 export function Header() {
   const { user, logout } = useAuthStore();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -29,9 +32,14 @@ export function Header() {
 
           {user && (
             <>
-              <span className="text-sm text-text-secondary hidden sm:inline">
-                {user.email}
-              </span>
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="text-sm text-text-secondary hover:text-text-primary transition-colors hidden sm:inline"
+              >
+                {user.firstName && user.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.email}
+              </button>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut size={18} />
                 <span className="hidden sm:inline">Выйти</span>
@@ -40,6 +48,11 @@ export function Header() {
           )}
         </div>
       </div>
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </header>
   );
 }

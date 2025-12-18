@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types/index.js';
 import { cookieConfig, COOKIE_NAME } from '../config/cookie.js';
 import * as authService from '../services/auth.service.js';
-import { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
+import { RegisterInput, LoginInput, UpdateProfileInput } from '../schemas/auth.schema.js';
 import { HTTP_STATUS, ERROR_MESSAGES } from '../constants/index.js';
 
 /**
@@ -72,6 +72,55 @@ export async function me(
     }
 
     const user = await authService.getCurrentUser(req.user.userId);
+    res.json({ success: true, data: { user } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Gets user profile
+ */
+export async function getProfile(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        error: ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED,
+      });
+      return;
+    }
+
+    const user = await authService.getUserProfile(req.user.userId);
+    res.json({ success: true, data: { user } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Updates user profile
+ */
+export async function updateProfile(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        error: ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED,
+      });
+      return;
+    }
+
+    const input: UpdateProfileInput = req.body;
+    const user = await authService.updateUserProfile(req.user.userId, input);
     res.json({ success: true, data: { user } });
   } catch (error) {
     next(error);
