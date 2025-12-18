@@ -87,10 +87,6 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   ? `${user.firstName} ${user.lastName}`
                   : 'Пользователь'}
               </h3>
-              <div className="flex items-center justify-center gap-2 text-sm text-text-secondary">
-                <Mail className="w-4 h-4" />
-                {user.email}
-              </div>
               <p className="text-xs text-text-tertiary mt-1">
                 <Calendar className="w-3 h-3 inline mr-1" />
                 Зарегистрирован {new Date(user.createdAt).toLocaleDateString('ru-RU')}
@@ -100,6 +96,18 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
           {/* Edit Form */}
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Email
+              </label>
+              <Input
+                type="email"
+                value={user.email}
+                disabled
+                className="bg-bg-secondary cursor-not-allowed"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-1.5">
