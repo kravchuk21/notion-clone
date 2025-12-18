@@ -25,6 +25,27 @@ async function verifyBoardAccess(boardId: string, userId: string) {
 export async function getUserBoards(userId: string) {
   return prisma.board.findMany({
     where: { userId },
+    orderBy: [
+      { isFavorite: 'desc' }, // Favorites first
+      { createdAt: 'desc' }
+    ],
+    include: {
+      _count: {
+        select: { columns: true },
+      },
+    },
+  });
+}
+
+/**
+ * Gets only favorite boards for a user
+ */
+export async function getFavoriteBoards(userId: string) {
+  return prisma.board.findMany({
+    where: {
+      userId,
+      isFavorite: true
+    },
     orderBy: { createdAt: 'desc' },
     include: {
       _count: {
@@ -123,6 +144,28 @@ export async function deleteBoard(boardId: string, userId: string) {
   });
 
   return { success: true };
+}
+
+/**
+ * Toggles favorite status for a board
+ * @throws AppError if board not found
+ */
+export async function toggleFavorite(boardId: string, userId: string) {
+  await verifyBoardAccess(boardId, userId);
+
+  const board = await prisma.board.findUnique({
+    where: { id: boardId },
+    select: { isFavorite: true },
+  });
+
+  if (!board) {
+    throw createError(ERROR_MESSAGES.BOARD.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  return prisma.board.update({
+    where: { id: boardId },
+    data: { isFavorite: !board.isFavorite },
+  });
 }
 
 /**

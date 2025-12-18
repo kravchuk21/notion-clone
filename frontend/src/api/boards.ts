@@ -26,5 +26,10 @@ export const boardsApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/boards/${id}`);
   },
+
+  async toggleFavorite(id: string): Promise<Board> {
+    const response = await api.patch<ApiResponse<Board>>(`/boards/${id}/favorite`);
+    return extractData(response);
+  },
 };
 

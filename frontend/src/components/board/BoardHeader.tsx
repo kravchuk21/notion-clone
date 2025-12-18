@@ -1,15 +1,17 @@
 import { useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Trash2, Check, X, Archive } from 'lucide-react';
+import { Edit2, Trash2, Check, X, Archive, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { BoardIcon } from '@/components/board/BoardIcon';
+import { cn } from '@/utils/cn';
 
 export interface BoardHeaderProps {
   title: string;
   icon: string | null;
-  onUpdate: (data: { title?: string; icon?: string | null }) => void;
+  isFavorite: boolean;
+  onUpdate: (data: { title?: string; icon?: string | null; isFavorite?: boolean }) => void;
   onDelete: () => void;
   onOpenArchive?: () => void;
   isUpdating?: boolean;
@@ -20,6 +22,7 @@ export interface BoardHeaderProps {
 export function BoardHeader({
   title,
   icon,
+  isFavorite,
   onUpdate,
   onDelete,
   onOpenArchive,
@@ -105,6 +108,18 @@ export function BoardHeader({
 
         <div className="flex items-center gap-2">
           {children}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onUpdate({ isFavorite: !isFavorite })}
+            className={cn(
+              "text-text-secondary hover:text-text-primary",
+              isFavorite && "text-red-500 hover:text-red-600"
+            )}
+            title={isFavorite ? "Убрать из любимых" : "Добавить в любимые"}
+          >
+            <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
+          </Button>
           {onOpenArchive && (
             <Button
               variant="ghost"

@@ -13,6 +13,7 @@ router.get('/', boardsController.getBoards);
 router.get('/:id', boardsController.getBoard);
 router.post('/', validate(createBoardSchema), boardsController.createBoard);
 router.put('/:id', validate(updateBoardSchema), boardsController.updateBoard);
+router.patch('/:id/favorite', boardsController.toggleFavorite);
 router.delete('/:id', boardsController.deleteBoard);
 
 export default router;

@@ -100,6 +100,32 @@ export async function updateBoard(
 }
 
 /**
+ * Toggles favorite status for a board
+ */
+export async function toggleFavorite(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false });
+      return;
+    }
+
+    const board = await boardsService.toggleFavorite(req.params.id, userId);
+
+    const io = getIO();
+    io.to(getBoardRoom(board.id)).emit(SOCKET_EVENTS.BOARD.UPDATED, board);
+
+    res.json({ success: true, data: board });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Deletes a board
  */
 export async function deleteBoard(

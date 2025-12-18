@@ -60,6 +60,22 @@ export function useUpdateBoard() {
 }
 
 /**
+ * Hook to toggle favorite status for a board
+ */
+export function useToggleFavoriteBoard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => boardsApi.toggleFavorite(id),
+    onSuccess: (board) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOARDS, board.id] });
+      toast.success(board.isFavorite ? 'Доска добавлена в любимые ❤️' : 'Доска удалена из любимых 💔');
+    },
+  });
+}
+
+/**
  * Hook to delete a board
  */
 export function useDeleteBoard() {

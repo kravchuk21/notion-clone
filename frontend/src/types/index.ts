@@ -10,6 +10,7 @@ export interface Board {
   id: string;
   title: string;
   icon: string | null;
+  isFavorite: boolean;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -85,6 +86,7 @@ export interface CreateBoardInput {
 export interface UpdateBoardInput {
   title?: string;
   icon?: string | null;
+  isFavorite?: boolean;
 }
 
 export interface CreateColumnInput {

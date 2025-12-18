@@ -79,6 +79,7 @@ function BoardContent({ boardId }: { boardId: string }) {
             <BoardHeader
               title={board.title}
               icon={board.icon}
+              isFavorite={board.isFavorite}
               onUpdate={(data) => updateBoard.mutate({ id: board.id, data })}
               onDelete={() => deleteBoard.mutate(board.id)}
               onOpenArchive={() => setIsArchiveOpen(true)}

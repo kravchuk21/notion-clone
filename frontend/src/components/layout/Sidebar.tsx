@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useBoards, useCreateBoard } from '@/hooks/useBoards';
+import { Plus, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { useBoards, useCreateBoard, useToggleFavoriteBoard } from '@/hooks/useBoards';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -17,6 +17,7 @@ export function Sidebar() {
 
   const { data: boards, isLoading } = useBoards();
   const createBoard = useCreateBoard();
+  const toggleFavorite = useToggleFavoriteBoard();
 
   const handleCreateBoard = async () => {
     if (!newBoardTitle.trim()) return;
@@ -79,26 +80,100 @@ export function Sidebar() {
                 </p>
               )
             ) : (
-              <div className="space-y-1">
-                {boards?.map((board) => (
-                  <Link
-                    key={board.id}
-                    to={`/board/${board.id}`}
-                    className={cn(
-                      'flex items-center gap-2 px-2 py-2 rounded-md text-sm',
-                      'transition-colors duration-150',
-                      location.pathname === `/board/${board.id}`
-                        ? 'bg-bg-hover text-text-primary'
-                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
-                    )}
-                    title={board.title}
-                  >
-                    <BoardIcon icon={board.icon} size="sm" />
+              <div className="space-y-3">
+                {/* Favorite boards */}
+                {boards?.some(board => board.isFavorite) && (
+                  <div className="space-y-1">
                     {!isCollapsed && (
-                      <span className="truncate">{board.title}</span>
+                      <h3 className="text-xs font-medium text-text-tertiary px-2 uppercase tracking-wider">
+                        Любимые
+                      </h3>
                     )}
-                  </Link>
-                ))}
+                    {boards
+                      .filter(board => board.isFavorite)
+                      .map((board) => (
+                      <div key={board.id} className="flex items-center group relative">
+                          <Link
+                            to={`/board/${board.id}`}
+                            className={cn(
+                              'flex items-center gap-2 px-2 py-2 rounded-md text-sm flex-1',
+                              'transition-colors duration-150',
+                              location.pathname === `/board/${board.id}`
+                                ? 'bg-bg-hover text-text-primary'
+                                : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                            )}
+                            title={board.title}
+                          >
+                            <BoardIcon icon={board.icon} size="sm" />
+                            {!isCollapsed && (
+                              <span className="truncate">{board.title}</span>
+                            )}
+                          </Link>
+                          {!isCollapsed && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleFavorite.mutate(board.id);
+                              }}
+                              className={cn(
+                                "absolute right-1 p-1 rounded transition-all opacity-60 group-hover:opacity-100",
+                                "text-red-500 hover:text-red-600"
+                              )}
+                              title="Убрать из любимых"
+                            >
+                              <Heart size={14} fill="currentColor" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {/* All boards */}
+                <div className="space-y-1">
+                  {!isCollapsed && boards?.some(board => board.isFavorite) && (
+                    <h3 className="text-xs font-medium text-text-tertiary px-2 uppercase tracking-wider">
+                      Все доски
+                    </h3>
+                  )}
+                  {boards
+                    .filter(board => !board.isFavorite)
+                    .map((board) => (
+                      <div key={board.id} className="flex items-center group relative">
+                        <Link
+                          to={`/board/${board.id}`}
+                          className={cn(
+                            'flex items-center gap-2 px-2 py-2 rounded-md text-sm flex-1',
+                            'transition-colors duration-150',
+                            location.pathname === `/board/${board.id}`
+                              ? 'bg-bg-hover text-text-primary'
+                              : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                          )}
+                          title={board.title}
+                        >
+                          <BoardIcon icon={board.icon} size="sm" />
+                          {!isCollapsed && (
+                            <span className="truncate">{board.title}</span>
+                          )}
+                        </Link>
+                        {!isCollapsed && (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleFavorite.mutate(board.id);
+                            }}
+                            className={cn(
+                              "absolute right-1 p-1 rounded transition-all opacity-60 group-hover:opacity-100",
+                              "text-text-tertiary hover:text-red-500"
+                            )}
+                            title="Добавить в любимые"
+                          >
+                            <Heart size={14} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </nav>

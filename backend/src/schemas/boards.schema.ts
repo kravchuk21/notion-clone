@@ -8,6 +8,7 @@ export const createBoardSchema = z.object({
 export const updateBoardSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title too long').optional(),
   icon: z.string().max(8).nullable().optional(),
+  isFavorite: z.boolean().optional(),
 });
 
 export const boardIdSchema = z.object({
