@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LogOut, LayoutDashboard } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Button } from '@/components/ui/Button';
@@ -18,11 +18,15 @@ export function Header() {
     <header className="h-14 border-b border-border bg-bg-primary/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="h-full px-4 flex items-center justify-between">
         {/* Logo */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="flex items-center gap-2 text-text-primary hover:text-accent transition-colors"
         >
-          <LayoutDashboard size={24} />
+          <img
+            src="/notion-icon.svg"
+            alt="Notion Clone"
+            className="w-6 h-6 text-accent"
+          />
           <span className="font-semibold text-lg hidden sm:inline">TaskFlow</span>
         </Link>
 

@@ -92,27 +92,17 @@ export function AuthHero() {
         {/* Logo & Title */}
         <motion.div className="mb-8 md:mb-12" variants={itemVariants}>
           <div className="flex items-center gap-3 mb-4">
-            <motion.div 
-              className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-accent flex items-center justify-center"
+            <motion.div
+              className="flex items-center justify-center"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-              whileHover={{ scale: 1.1 }}
             >
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                className="w-6 h-6 md:w-7 md:h-7 text-white"
-                stroke="currentColor" 
-                strokeWidth="2"
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-              </svg>
+              <img
+                src="/notion-icon.svg"
+                alt="Notion Clone"
+                className="w-8 h-8 md:w-10 md:h-10 text-accent"
+              />
             </motion.div>
             <motion.span 
               className="text-2xl md:text-3xl font-bold text-text-primary"

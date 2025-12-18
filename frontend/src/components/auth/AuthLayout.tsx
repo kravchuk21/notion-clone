@@ -31,26 +31,17 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         {/* Mobile: compact version */}
         <div className="md:hidden px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <motion.div 
-              className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center"
+            <motion.div
+              className="flex items-center justify-center"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
             >
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                className="w-5 h-5 text-white"
-                stroke="currentColor" 
-                strokeWidth="2"
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-              </svg>
+              <img
+                src="/notion-icon.svg"
+                alt="Notion Clone"
+                className="w-6 h-6 text-accent"
+              />
             </motion.div>
             <motion.span 
               className="text-xl font-semibold text-text-primary"

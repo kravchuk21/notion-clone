@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { CheckCircle2, Sparkles, Users } from 'lucide-react';
+import { CheckCircle2, Users } from 'lucide-react';
 import { 
   authStaggerContainer, 
   authStaggerItem, 
@@ -100,11 +100,15 @@ export function RegisterForm() {
     >
       {/* Header */}
       <motion.div className="text-center mb-8" variants={authStaggerItem}>
-        <motion.div 
-          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-lg shadow-accent/25 mb-4"
+        <motion.div
+          className="flex items-center justify-center mb-4"
           variants={authIconVariants}
         >
-          <Sparkles className="w-7 h-7 text-white" />
+          <img
+            src="/notion-icon.svg"
+            alt="Notion Clone"
+            className="w-8 h-8 text-accent"
+          />
         </motion.div>
         <motion.h1 
           className="text-2xl font-bold text-text-primary"
